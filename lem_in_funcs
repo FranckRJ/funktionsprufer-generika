@@ -1,0 +1,7 @@
+read
+write
+malloc
+free
+perror
+strerror
+exit
