@@ -53,11 +53,25 @@ function check_author_file
 		echo "auteurs non initialises."
 		return
 	fi
-	authorFileContent=${authorFileContent//[$'\n']}
-	if [[ "$authors" == "$authorFileContent" ]] || [[ "${authors//\:}" == "$authorFileContent" ]]; then
-		echo "OK."
+	OIFS="$IFS"
+	IFS=':
+'
+	read -a listOfAuthorsInFileContent <<< $authorFileContent
+	IFS=':'
+	read  -a listOfAuthors <<< $authors
+	IFS="$OIFS"
+	listOfAuthorsInFileContent=($listOfAuthorsInFileContent)
+	listOfAuthors=($listOfAuthors)
+	for author in ${listOfAuthorsInFileContent[@]}; do
+		if [[ ! " ${listOfAuthors[@]} " =~ " $author " ]]; then
+			echo "ERREUR : $author n'est pas dans la liste des auteurs."
+			return
+		fi
+	done
+	if [[ ! "${#listOfAuthors[@]}" -eq "${#listOfAuthorsInFileContent[@]}" ]]; then
+		echo "ERREUR : tous les auteurs du projet ne sont pas presents dans le fichier auteur."
 	else
-		echo "ERREUR : les auteurs ne correspondent pas."
+		echo "OK."
 	fi
 }
 
