@@ -259,13 +259,14 @@ function check_makefile
 
 function check_forbidden_func
 {
+	errorOccurred="false"
 	echo " -------- Fonctions interdites : "
 	if [[ -z "$execToCheck" ]]; then
-		echo "executable non initialise."
+		echo "Executable non initialise."
 		return
 	fi
 	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
-		echo "ERREUR : executable non trouve."
+		print_error "ERREUR : executable non trouve."
 		return
 	fi
 	listOfFunctionInString=$(nm -u "$dirToCheck"/"$execToCheck" | grep "^_" | grep -v "^__" | cut -d_ -f2- | cut -d$ -f1)
@@ -273,11 +274,13 @@ function check_forbidden_func
 	read -a listOfAuthorizedFunction <<< $authorizedFuncs
 	for func in ${listOfFunction[@]}; do
 		if [[ ! " ${listOfAuthorizedFunction[@]} " =~ " $func " ]]; then
-			echo "ERREUR : la fonction $func n'est pas autorisee."
-			return
+			print_error "ERREUR : la fonction $func n'est pas autorisee."
+			errorOccurred="true"
 		fi
 	done
-	echo "OK."
+	if [[ "$errorOccurred" == "false" ]]; then
+		print_ok "OK."
+	fi
 }
 
 argv=("$@")
