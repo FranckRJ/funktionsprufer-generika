@@ -17,6 +17,8 @@ checkNorme="true"
 checkCodeAuthors="true"
 checkMakefile="true"
 checkForbidFunc="true"
+makeFlags=""
+makeReFlags=""
 
 function print_help
 {
@@ -35,6 +37,9 @@ LISTE DES COMMANDES :
 --nocodeauthors               Desactive la verification des auteurs du code.
 --nomakefile                  Desactive la verification du Makefile.
 --noforbidfunc                Desactive la verification des fonctions interdites.
+--makej                       Active l'option -j pour les make normaux.
+--makerej                     Active l'option -j pour les make re.
+--makeallj                    Active l'option -j pour les make re et normaux.
 --help / -h                   Affiche cette page d'aide.
 EOM
 
@@ -178,7 +183,7 @@ function makefile_check_make
 	if [[ "$1" == "true" ]]; then
 		sleep 2 #pour etre certain que le nouvel executable a un nouveau timestamp s'il relink.
 	fi
-	make -C "$dirToCheck" &> /dev/null
+	make $makeFlags -C "$dirToCheck" &> /dev/null
 	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
 		print_error "ERREUR : make n'a pas cree l'executable."
 		return 1
@@ -196,7 +201,7 @@ function makefile_check_re
 {
 	execTimestamp=$(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null)
 	sleep 2 #pour etre certain que le nouvel executable a un nouveau timestamp.
-	make re -C "$dirToCheck" &> /dev/null
+	make $makeReFlags re -C "$dirToCheck" &> /dev/null
 	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
 		print_error "ERREUR : make re n'a pas cree l'executable."
 		return 1
@@ -335,6 +340,13 @@ while [[ "$idx" != "$argc" ]]; do
 			checkMakefile="false"
 		elif [[ "$param" == "--noforbidfunc" ]]; then
 			checkForbidFunc="false"
+		elif [[ "$param" == "--makej" ]]; then
+			makeFlags="-j"
+		elif [[ "$param" == "--makerej" ]]; then
+			makeReFlags="-j"
+		elif [[ "$param" == "--makeallj" ]]; then
+			makeFlags="-j"
+			makeReFlags="-j"
 		else
 			echo "Erreur : parametre $param inconnu. Utilisez --help pour afficher l'aide."
 			exit 0
@@ -364,6 +376,6 @@ if [[ "$checkMakefile" == "true" ]]; then
 	check_makefile
 fi
 if [[ "$checkForbidFunc" == "true" ]]; then
-	make -C "$dirToCheck" &> /dev/null
+	make $makeFlags -C "$dirToCheck" &> /dev/null
 	check_forbidden_func
 fi
