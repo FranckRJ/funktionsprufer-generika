@@ -151,7 +151,7 @@ function makefile_check_fclean
 {
 	make fclean -C "$dirToCheck" &> /dev/null
 	if [[ -f "$dirToCheck"/"$execToCheck" ]]; then
-		echo "ERREUR : make fclean ne supprime pas l'executable."
+		print_error "ERREUR : make fclean ne supprime pas l'executable."
 		return 1
 	fi
 	return 0
@@ -165,7 +165,7 @@ function makefile_check_clean
 	fi
 	make clean -C "$dirToCheck" &> /dev/null
 	if [[ "$execWasHere" == "true" ]] && [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
-		echo "ERREUR : make clean a supprime l'executable."
+		print_error "ERREUR : make clean a supprime l'executable."
 		return 1
 	fi
 	return 0
@@ -180,12 +180,12 @@ function makefile_check_make
 	fi
 	make -C "$dirToCheck" &> /dev/null
 	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
-		echo "ERREUR : make n'a pas cree l'executable."
+		print_error "ERREUR : make n'a pas cree l'executable."
 		return 1
 	fi
 	if [[ "$1" == "true" ]]; then
 		if [[ "$execTimestamp" != $(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null) ]]; then
-			echo "ERREUR : make relink."
+			print_error "ERREUR : make relink."
 			return 1
 		fi
 	fi
@@ -198,11 +198,11 @@ function makefile_check_re
 	sleep 2 #pour etre certain que le nouvel executable a un nouveau timestamp.
 	make re -C "$dirToCheck" &> /dev/null
 	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
-		echo "ERREUR : make re n'a pas cree l'executable."
+		print_error "ERREUR : make re n'a pas cree l'executable."
 		return 1
 	fi
 	if [[ "$execTimestamp" == $(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null) ]]; then
-		echo "ERREUR : make re n'a pas recompile l'executable."
+		print_error "ERREUR : make re n'a pas recompile l'executable."
 		return 1
 	fi
 	return 0
@@ -212,7 +212,7 @@ function check_makefile
 {
 	echo " -------- Makefile : "
 	if [[ ! -f "$dirToCheck"/Makefile ]]; then
-		echo "ERREUR : Makefile non trouve."
+		print_error "ERREUR : Makefile non trouve."
 		return
 	fi
 	if ! makefile_check_clean; then
@@ -254,7 +254,7 @@ function check_makefile
 	if ! makefile_check_re; then
 		return
 	fi
-	echo "OK."
+	print_ok "OK."
 }
 
 function check_forbidden_func
