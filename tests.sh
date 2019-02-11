@@ -58,7 +58,7 @@ function print_ok
 function check_author_file
 {
 	errorOccurred="false"
-	echo " -------- Fichier auteur : "
+	echo " -------- Fichier auteur :"
 	authorFileContent=""
 	if [[ -f "$dirToCheck"/auteur ]]; then
 		authorFileContent=$(cat "$dirToCheck"/auteur)
@@ -103,7 +103,7 @@ function check_author_file
 
 function check_norme
 {
-	echo " -------- Norme : "
+	echo " -------- Norme :"
 	if command -v norminette &> /dev/null; then
 		normeResult="$(norminette "$dirToCheck" | grep -v "^Warning: Not a valid file" | grep -v "^Norme: ")"
 		if [[ -z "$normeResult" ]]; then
@@ -118,7 +118,7 @@ function check_norme
 
 function check_author_of_code
 {
-	echo " -------- Auteurs du code : "
+	echo " -------- Auteurs du code :"
 	if [[ -z $authors ]]; then
 		echo "Auteurs non initialises."
 		return
@@ -210,7 +210,7 @@ function makefile_check_re
 
 function check_makefile
 {
-	echo " -------- Makefile : "
+	echo " -------- Makefile :"
 	if [[ ! -f "$dirToCheck"/Makefile ]]; then
 		print_error "ERREUR : Makefile non trouve."
 		return
@@ -260,7 +260,7 @@ function check_makefile
 function check_forbidden_func
 {
 	errorOccurred="false"
-	echo " -------- Fonctions interdites : "
+	echo " -------- Fonctions interdites :"
 	if [[ -z "$execToCheck" ]]; then
 		echo "Executable non initialise."
 		return
