@@ -120,7 +120,7 @@ function check_author_of_code
 {
 	echo " -------- Auteurs du code : "
 	if [[ -z $authors ]]; then
-		echo "auteurs non initialises."
+		echo "Auteurs non initialises."
 		return
 	fi
 	OIFS="$IFS"
@@ -136,13 +136,12 @@ function check_author_of_code
 			IFS=" "
 			for authorInCodeFile in ${listOfAuthorsInCodeFile[@]}; do
 				if [[ ! " ${listOfAuthors[@]} " =~ " $authorInCodeFile " ]]; then
-					echo "ERREUR : l'auteur du fichier $codeFile ($authorInCodeFile) n'est pas un auteur du projet."
-					return
+					print_error "ERREUR : l'auteur du fichier $codeFile ($authorInCodeFile) n'est pas un auteur du projet."
 				fi
 			done
 		done)
 	if [[ -z "$findError" ]]; then
-		echo "OK."
+		print_ok "OK."
 	else
 		echo "$findError"
 	fi
