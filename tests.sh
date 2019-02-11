@@ -13,7 +13,7 @@ execToCheck=""
 authors=""
 authorizedFuncs=""
 checkAuthorFile="true"
-checkNorm="true"
+checkNorme="true"
 checkCodeAuthors="true"
 checkMakefile="true"
 checkForbidFunc="true"
@@ -31,7 +31,7 @@ LISTE DES COMMANDES :
 --exec / -e                   Specifie le nom de l'executable du projet.
 --funcs / -f                  Specifie la liste des fonctions autorisees.
 --noauthorfile                Desactive la verification du fichier auteur.
---nonorm                      Desactive la verification de la norme.
+--nonorme                     Desactive la verification de la norme.
 --nocodeauthors               Desactive la verification des auteurs du code.
 --nomakefile                  Desactive la verification du Makefile.
 --noforbidfunc                Desactive la verification des fonctions interdites.
@@ -327,8 +327,8 @@ while [[ "$idx" != "$argc" ]]; do
 			fi
 		elif [[ "$param" == "--noauthorfile" ]]; then
 			checkAuthorFile="false"
-		elif [[ "$param" == "--nonorm" ]]; then
-			checkNorm="false"
+		elif [[ "$param" == "--nonorme" ]]; then
+			checkNorme="false"
 		elif [[ "$param" == "--nocodeauthors" ]]; then
 			checkCodeAuthors="false"
 		elif [[ "$param" == "--nomakefile" ]]; then
@@ -354,7 +354,7 @@ done
 if [[ "$checkAuthorFile" == "true" ]]; then
 	check_author_file
 fi
-if [[ "$checkNorm" == "true" ]]; then
+if [[ "$checkNorme" == "true" ]]; then
 	check_norme
 fi
 if [[ "$checkCodeAuthors" == "true" ]]; then
