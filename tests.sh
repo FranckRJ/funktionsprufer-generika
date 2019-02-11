@@ -1,5 +1,9 @@
 #!/bin/bash
 
+OK_COLOR="\033[1;32m"
+ERROR_COLOR="\033[1;31m"
+RESET_COLOR="\033[0m"
+
 #Desactivation du globbing parce que ca peut poser probleme et que ca sert a rien pour ce script (je suppose).
 set -f
 
@@ -37,20 +41,35 @@ EOM
 echo "$HELP_TEXT"
 }
 
+function print_error
+{
+	echo -e -n "$ERROR_COLOR"
+	echo -n "$1"
+	echo -e "$RESET_COLOR"
+}
+
+function print_ok
+{
+	echo -e -n "$OK_COLOR"
+	echo -n "$1"
+	echo -e "$RESET_COLOR"
+}
+
 function check_author_file
 {
-	echo -n "Fichier auteur : "
+	errorOccurred="false"
+	echo " -------- Fichier auteur : "
 	authorFileContent=""
 	if [[ -f "$dirToCheck"/auteur ]]; then
 		authorFileContent=$(cat "$dirToCheck"/auteur)
 	elif [[ -f "$dirToCheck"/author ]]; then
 		authorFileContent=$(cat "$dirToCheck"/author)
 	else
-		echo "ERREUR : fichier non trouve."
+		print_error "ERREUR : fichier non trouve."
 		return
 	fi
 	if [[ -z $authors ]]; then
-		echo "auteurs non initialises."
+		echo "Auteurs non initialises."
 		return
 	fi
 	OIFS="$IFS"
@@ -64,35 +83,42 @@ function check_author_file
 	listOfAuthors=($listOfAuthors)
 	for author in ${listOfAuthorsInFileContent[@]}; do
 		if [[ ! " ${listOfAuthors[@]} " =~ " $author " ]]; then
-			echo "ERREUR : $author n'est pas dans la liste des auteurs."
-			return
+			print_error "ERREUR : $author n'est pas dans la liste des auteurs."
+			errorOccurred="true"
+		else
+			for i in "${!listOfAuthors[@]}"; do
+				if [[ "${listOfAuthors[i]}" == "$author" ]]; then
+					unset 'listOfAuthors[i]'
+					break
+				fi
+			done
 		fi
 	done
-	if [[ ! "${#listOfAuthors[@]}" -eq "${#listOfAuthorsInFileContent[@]}" ]]; then
-		echo "ERREUR : tous les auteurs du projet ne sont pas presents dans le fichier auteur."
-	else
-		echo "OK."
+	if [[ "${#listOfAuthors[@]}" -gt 0 ]]; then
+		print_error "ERREUR : tous les auteurs du projet ne sont pas presents dans le fichier auteur."
+	elif [[ "$errorOccurred" == "false" ]]; then
+		print_ok "OK."
 	fi
 }
 
 function check_norme
 {
-	echo -n "Norme : "
+	echo " -------- Norme : "
 	if command -v norminette &> /dev/null; then
-		norme_result=$(norminette "$dirToCheck" | grep -v "^Warning: Not a valid file" | grep -v "^Norme: ")
-		if [[ -z "$norme_result" ]]; then
-			echo "OK."
+		normeResult="$(norminette "$dirToCheck" | grep -v "^Warning: Not a valid file" | grep -v "^Norme: ")"
+		if [[ -z "$normeResult" ]]; then
+			print_ok "OK."
 		else
-			echo "ERREUR."
+			print_error "ERREUR : "$(echo "$normeResult" | wc -l | tr -d ' ')" erreur(s) de norme."
 		fi
 	else
-		echo "norminette non presente."
+		echo "Norminette non presente."
 	fi
 }
 
 function check_author_of_code
 {
-	echo -n "Auteurs du code : "
+	echo " -------- Auteurs du code : "
 	if [[ -z $authors ]]; then
 		echo "auteurs non initialises."
 		return
@@ -185,7 +211,7 @@ function makefile_check_re
 
 function check_makefile
 {
-	echo -n "Makefile : "
+	echo " -------- Makefile : "
 	if [[ ! -f "$dirToCheck"/Makefile ]]; then
 		echo "ERREUR : Makefile non trouve."
 		return
@@ -234,7 +260,7 @@ function check_makefile
 
 function check_forbidden_func
 {
-	echo -n "Fonctions interdites : "
+	echo " -------- Fonctions interdites : "
 	if [[ -z "$execToCheck" ]]; then
 		echo "executable non initialise."
 		return
