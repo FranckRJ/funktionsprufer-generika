@@ -13,6 +13,7 @@ dirToCheckIsCustom="false"
 execToCheck=""
 authors=""
 authorizedFuncs=""
+forbidEndingChars="&|/*-+"
 checkAuthorFile="true"
 checkNorme="true"
 checkAdvancedNorme="true"
@@ -34,6 +35,7 @@ LISTE DES COMMANDES :
                               separateur. La liste ne peut pas contenir d'espaces.
 --exec / -e                   Specifie le nom de l'executable du projet.
 --funcs / -f                  Specifie la liste des fonctions autorisees.
+--forbidendingop / -feo       Specifie la liste des operateurs interdits en fin de ligne.
 --noauthorfile / -naf         Desactive la verification du fichier auteur.
 --nonorme / -nn               Desactive la verification de la norme.
 --noadvancednorme / -nan      Desactive la verification de la norme avancee.
@@ -128,13 +130,22 @@ function check_norme
 
 function check_advanced_norme
 {
+	forbidEndingCharsRegex=""
+	isFirstCharAdded="true"
+	for (( i=0; i<${#forbidEndingChars}; i++ )); do
+		if [[ "$isFirstCharAdded" == "false" ]]; then
+			forbidEndingCharsRegex="${forbidEndingCharsRegex}|"
+		fi
+		isFirstCharAdded="false"
+		forbidEndingCharsRegex="${forbidEndingCharsRegex}\\${forbidEndingChars:$i:1}"
+	done
 	echo " -------- Norme avancee :"
 	findError=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
-			grepRes="$(grep -nE '(\+|\||\&|\-|\*|\/)$' $codeFile | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | tail -n +12)"
+			grepRes="$(tail -n +12 $codeFile | grep -nE '('"$forbidEndingCharsRegex"')$' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "Erreur de norme dans le fichier ${codeFile} :"
-				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\$1${RESET_COLOR}: \$2\n\""
+				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
 		done)
 	if [[ -z "$findError" ]]; then
@@ -352,6 +363,15 @@ while [[ "$idx" != "$argc" ]]; do
 				exit 0
 			else
 				authorizedFuncs="$param"
+			fi
+		elif [[ "$param" == "--forbidendingop" ]] || [[ "$param" == "-feo" ]]; then
+			(( ++idx ))
+			param="${argv[$idx]}"
+			if [[ -z "$param" ]]; then
+				echo "Erreur : le parametre operateurs interdits en fin de ligne ne doit pas etre vide."
+				exit 0
+			else
+				forbidEndingChars="$param"
 			fi
 		elif [[ "$param" == "--noauthorfile" ]] || [[ "$param" == "-naf" ]]; then
 			checkAuthorFile="false"
