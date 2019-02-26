@@ -131,7 +131,7 @@ function check_advanced_norme
 	echo " -------- Norme avancee :"
 	findError=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
-			grepRes="$(grep -nE '(\,|\=|\+|\||\&|\-|\*|\/)$' $codeFile | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | tail -n +12)"
+			grepRes="$(grep -nE '(\+|\||\&|\-|\*|\/)$' $codeFile | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | tail -n +12)"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "Erreur de norme dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\$1${RESET_COLOR}: \$2\n\""
