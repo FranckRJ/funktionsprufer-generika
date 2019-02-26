@@ -2,6 +2,7 @@
 
 OK_COLOR="\033[1;32m"
 ERROR_COLOR="\033[1;31m"
+INFO_COLOR="\033[1;33m"
 RESET_COLOR="\033[0m"
 
 #Desactivation du globbing parce que ca peut poser probleme et que ca sert a rien pour ce script (je suppose).
@@ -14,6 +15,7 @@ authors=""
 authorizedFuncs=""
 checkAuthorFile="true"
 checkNorme="true"
+checkAdvancedNorme="true"
 checkCodeAuthors="true"
 checkMakefile="true"
 checkForbidFunc="true"
@@ -34,6 +36,9 @@ LISTE DES COMMANDES :
 --funcs / -f                  Specifie la liste des fonctions autorisees.
 --noauthorfile                Desactive la verification du fichier auteur.
 --nonorme                     Desactive la verification de la norme.
+--noadvancednorme             Desactive la verification de la norme avancee.
+                              Si cette option n'est pas desactivee, son resultat doit
+                              etre verifie manuellement par l'utilisateur.
 --nocodeauthors               Desactive la verification des auteurs du code.
 --nomakefile                  Desactive la verification du Makefile.
 --noforbidfunc                Desactive la verification des fonctions interdites.
@@ -118,6 +123,24 @@ function check_norme
 		fi
 	else
 		echo "Norminette non presente."
+	fi
+}
+
+function check_advanced_norme
+{
+	echo " -------- Norme avancee :"
+	findError=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
+		while IFS= read -r -d $'\0' codeFile; do
+			grepRes="$(grep -nE '(\,|\=|\+|\||\&|\-|\*|\/)$' $codeFile | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | tail -n +12)"
+			if [[ ! -z "$grepRes" ]]; then
+				print_error "Erreur de norme dans le fichier ${codeFile} :"
+				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\$1${RESET_COLOR}: \$2\n\""
+			fi
+		done)
+	if [[ -z "$findError" ]]; then
+		print_ok "OK."
+	else
+		echo "$findError"
 	fi
 }
 
@@ -334,6 +357,8 @@ while [[ "$idx" != "$argc" ]]; do
 			checkAuthorFile="false"
 		elif [[ "$param" == "--nonorme" ]]; then
 			checkNorme="false"
+		elif [[ "$param" == "--noadvancednorme" ]]; then
+			checkAdvancedNorme="false"
 		elif [[ "$param" == "--nocodeauthors" ]]; then
 			checkCodeAuthors="false"
 		elif [[ "$param" == "--nomakefile" ]]; then
@@ -368,6 +393,9 @@ if [[ "$checkAuthorFile" == "true" ]]; then
 fi
 if [[ "$checkNorme" == "true" ]]; then
 	check_norme
+fi
+if [[ "$checkAdvancedNorme" == "true" ]]; then
+	check_advanced_norme
 fi
 if [[ "$checkCodeAuthors" == "true" ]]; then
 	check_author_of_code
