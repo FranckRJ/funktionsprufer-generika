@@ -1,0 +1,11 @@
+open
+read
+write
+lseek
+close
+malloc
+realloc
+free
+exit
+perror
+strerror
