@@ -34,14 +34,14 @@ LISTE DES COMMANDES :
                               separateur. La liste ne peut pas contenir d'espaces.
 --exec / -e                   Specifie le nom de l'executable du projet.
 --funcs / -f                  Specifie la liste des fonctions autorisees.
---noauthorfile                Desactive la verification du fichier auteur.
---nonorme                     Desactive la verification de la norme.
---noadvancednorme             Desactive la verification de la norme avancee.
+--noauthorfile / -naf         Desactive la verification du fichier auteur.
+--nonorme / -nn               Desactive la verification de la norme.
+--noadvancednorme / -nan      Desactive la verification de la norme avancee.
                               Si cette option n'est pas desactivee, son resultat doit
                               etre verifie manuellement par l'utilisateur.
---nocodeauthors               Desactive la verification des auteurs du code.
---nomakefile                  Desactive la verification du Makefile.
---noforbidfunc                Desactive la verification des fonctions interdites.
+--nocodeauthors / -nca        Desactive la verification des auteurs du code.
+--nomakefile / -nmf           Desactive la verification du Makefile.
+--noforbidfunc / -nff         Desactive la verification des fonctions interdites.
 --makej                       Active l'option -j pour les make normaux.
 --makerej                     Active l'option -j pour les make re.
 --makeallj                    Active l'option -j pour les make re et normaux.
@@ -353,17 +353,17 @@ while [[ "$idx" != "$argc" ]]; do
 			else
 				authorizedFuncs="$param"
 			fi
-		elif [[ "$param" == "--noauthorfile" ]]; then
+		elif [[ "$param" == "--noauthorfile" ]] || [[ "$param" == "-naf" ]]; then
 			checkAuthorFile="false"
-		elif [[ "$param" == "--nonorme" ]]; then
+		elif [[ "$param" == "--nonorme" ]] || [[ "$param" == "-nn" ]]; then
 			checkNorme="false"
-		elif [[ "$param" == "--noadvancednorme" ]]; then
+		elif [[ "$param" == "--noadvancednorme" ]] || [[ "$param" == "-nan" ]]; then
 			checkAdvancedNorme="false"
-		elif [[ "$param" == "--nocodeauthors" ]]; then
+		elif [[ "$param" == "--nocodeauthors" ]] || [[ "$param" == "-nca" ]]; then
 			checkCodeAuthors="false"
-		elif [[ "$param" == "--nomakefile" ]]; then
+		elif [[ "$param" == "--nomakefile" ]] || [[ "$param" == "-nmf" ]]; then
 			checkMakefile="false"
-		elif [[ "$param" == "--noforbidfunc" ]]; then
+		elif [[ "$param" == "--noforbidfunc" ]] || [[ "$param" == "-nff" ]]; then
 			checkForbidFunc="false"
 		elif [[ "$param" == "--makej" ]]; then
 			makeFlags="-j"
