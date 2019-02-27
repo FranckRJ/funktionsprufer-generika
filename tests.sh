@@ -20,6 +20,7 @@ checkAdvancedNorme="true"
 checkCodeAuthors="true"
 checkMakefile="true"
 checkForbidFunc="true"
+defaultCheckAreDisabled="false"
 makeFlags=""
 makeReFlags=""
 
@@ -31,6 +32,7 @@ Fait divers tests generiques sur un projet.
 
 LISTE DES COMMANDES :
 <chemin_vers_projet>              Specifie le chemin vers le projet a tester.
+
 --authors / -a <lst>              Specifie la liste des auteurs, avec un ':' comme
                                   separateur. La liste ne peut pas contenir d'espaces.
 --exec / -e <name>                Specifie le nom de l'executable du projet.
@@ -38,17 +40,25 @@ LISTE DES COMMANDES :
 --forbidendingop / -feo <lst>     Specifie la liste des operateurs interdits en fin de ligne.
 --strictendingop / -seo           La liste des operateurs interdits sera remplacee par une liste
                                   plus stricte ( & | / * - + , = ).
+
 --noauthorfile / -naf             Desactive la verification du fichier auteur.
 --nonorme / -nn                   Desactive la verification de la norme.
 --noadvancednorme / -nan          Desactive la verification de la norme avancee.
-                                  Si cette option n'est pas desactivee, son resultat doit
-                                  etre verifie manuellement par l'utilisateur.
 --nocodeauthors / -nca            Desactive la verification des auteurs du code.
 --nomakefile / -nmf               Desactive la verification du Makefile.
 --noforbidfunc / -nff             Desactive la verification des fonctions interdites.
+
+--onlyauthorfile / -oaf           Active uniquement la verification du fichier auteur.
+--onlynorme / -on                 Active uniquement la verification de la norme.
+--onlyadvancednorme / -oan        Active uniquement la verification de la norme avancee.
+--onlycodeauthors / -oca          Active uniquement la verification des auteurs du code.
+--onlymakefile / -omf             Active uniquement la verification du Makefile.
+--onlyforbidfunc / -off           Active uniquement la verification des fonctions interdites.
+
 --makej                           Active l'option -j pour les make normaux.
 --makerej                         Active l'option -j pour les make re.
 --makeallj                        Active l'option -j pour les make re et normaux.
+
 --help / -h                       Affiche cette page d'aide.
 EOM
 
@@ -67,6 +77,19 @@ function print_ok
 	echo -e -n "$OK_COLOR"
 	echo -n "$1"
 	echo -e "$RESET_COLOR"
+}
+
+function disable_default_check
+{
+	if [[ "$defaultCheckAreDisabled" == "false" ]]; then
+		checkAuthorFile="false"
+		checkNorme="false"
+		checkAdvancedNorme="false"
+		checkCodeAuthors="false"
+		checkMakefile="false"
+		checkForbidFunc="false"
+		defaultCheckAreDisabled="true"
+	fi
 }
 
 function check_author_file
@@ -421,6 +444,24 @@ while [[ "$idx" != "$argc" ]]; do
 			checkMakefile="false"
 		elif [[ "$param" == "--noforbidfunc" ]] || [[ "$param" == "-nff" ]]; then
 			checkForbidFunc="false"
+		elif [[ "$param" == "--onlyauthorfile" ]] || [[ "$param" == "-oaf" ]]; then
+			disable_default_check
+			checkAuthorFile="true"
+		elif [[ "$param" == "--onlynorme" ]] || [[ "$param" == "-on" ]]; then
+			disable_default_check
+			checkNorme="true"
+		elif [[ "$param" == "--onlyadvancednorme" ]] || [[ "$param" == "-oan" ]]; then
+			disable_default_check
+			checkAdvancedNorme="true"
+		elif [[ "$param" == "--onlycodeauthors" ]] || [[ "$param" == "-oca" ]]; then
+			disable_default_check
+			checkCodeAuthors="true"
+		elif [[ "$param" == "--onlymakefile" ]] || [[ "$param" == "-omf" ]]; then
+			disable_default_check
+			checkMakefile="true"
+		elif [[ "$param" == "--onlyforbidfunc" ]] || [[ "$param" == "-off" ]]; then
+			disable_default_check
+			checkForbidFunc="true"
 		elif [[ "$param" == "--makej" ]]; then
 			makeFlags="-j"
 		elif [[ "$param" == "--makerej" ]]; then
