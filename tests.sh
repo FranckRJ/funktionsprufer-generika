@@ -240,6 +240,15 @@ function makefile_check_make
 	return 0
 }
 
+function makefile_check_all_exist
+{
+	if ! make $makeFlags all -C "$dirToCheck" &> /dev/null; then
+		print_error "ERREUR : la regle all n'existe pas."
+		return 1
+	fi
+	return 0
+}
+
 function makefile_check_re
 {
 	execTimestamp=$(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null)
@@ -279,6 +288,9 @@ function check_makefile
 		return
 	fi
 	if ! makefile_check_make true; then
+		return
+	fi
+	if ! makefile_check_all_exist; then
 		return
 	fi
 	if ! makefile_check_fclean; then
