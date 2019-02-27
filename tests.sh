@@ -30,6 +30,12 @@ read -r -d '' HELP_TEXT << EOM
 DESCRIPTION :
 Fait divers tests generiques sur un projet.
 
+Les verifications de norme avancee et des auteurs du code depend de la norme, si la verification
+de la norme echoue ces tests ont un compertement indetermine.
+
+La norme avancee peut contenir des faux positifs, son resultat doit etre verifie manuellement.
+La liste par defaut des operateurs interdits en fin de ligne est & | / * - +.
+
 LISTE DES COMMANDES :
 <chemin_vers_projet>              Specifie le chemin vers le projet a tester.
 
