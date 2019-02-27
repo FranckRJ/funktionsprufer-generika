@@ -30,24 +30,26 @@ DESCRIPTION :
 Fait divers tests generiques sur un projet.
 
 LISTE DES COMMANDES :
-<chemin_vers_projet>          Specifie le chemin vers le projet a tester.
---authors / -a                Specifie la liste des auteurs, avec un ':' comme
-                              separateur. La liste ne peut pas contenir d'espaces.
---exec / -e                   Specifie le nom de l'executable du projet.
---funcs / -f                  Specifie la liste des fonctions autorisees.
---forbidendingop / -feo       Specifie la liste des operateurs interdits en fin de ligne.
---noauthorfile / -naf         Desactive la verification du fichier auteur.
---nonorme / -nn               Desactive la verification de la norme.
---noadvancednorme / -nan      Desactive la verification de la norme avancee.
-                              Si cette option n'est pas desactivee, son resultat doit
-                              etre verifie manuellement par l'utilisateur.
---nocodeauthors / -nca        Desactive la verification des auteurs du code.
---nomakefile / -nmf           Desactive la verification du Makefile.
---noforbidfunc / -nff         Desactive la verification des fonctions interdites.
---makej                       Active l'option -j pour les make normaux.
---makerej                     Active l'option -j pour les make re.
---makeallj                    Active l'option -j pour les make re et normaux.
---help / -h                   Affiche cette page d'aide.
+<chemin_vers_projet>              Specifie le chemin vers le projet a tester.
+--authors / -a <lst>              Specifie la liste des auteurs, avec un ':' comme
+                                  separateur. La liste ne peut pas contenir d'espaces.
+--exec / -e <name>                Specifie le nom de l'executable du projet.
+--funcs / -f <lst>                Specifie la liste des fonctions autorisees.
+--forbidendingop / -feo <lst>     Specifie la liste des operateurs interdits en fin de ligne.
+--strictendingop / -seo           La liste des operateurs interdits sera remplacee par une liste
+                                  plus stricte ( & | / * - + , = ).
+--noauthorfile / -naf             Desactive la verification du fichier auteur.
+--nonorme / -nn                   Desactive la verification de la norme.
+--noadvancednorme / -nan          Desactive la verification de la norme avancee.
+                                  Si cette option n'est pas desactivee, son resultat doit
+                                  etre verifie manuellement par l'utilisateur.
+--nocodeauthors / -nca            Desactive la verification des auteurs du code.
+--nomakefile / -nmf               Desactive la verification du Makefile.
+--noforbidfunc / -nff             Desactive la verification des fonctions interdites.
+--makej                           Active l'option -j pour les make normaux.
+--makerej                         Active l'option -j pour les make re.
+--makeallj                        Active l'option -j pour les make re et normaux.
+--help / -h                       Affiche cette page d'aide.
 EOM
 
 echo "$HELP_TEXT"
@@ -128,7 +130,7 @@ function check_norme
 	fi
 }
 
-function check_advanced_norme
+function advanced_norme_check_forbidendingchars
 {
 	forbidEndingCharsRegex=""
 	isFirstCharAdded="true"
@@ -139,19 +141,27 @@ function check_advanced_norme
 		isFirstCharAdded="false"
 		forbidEndingCharsRegex="${forbidEndingCharsRegex}\\${forbidEndingChars:$i:1}"
 	done
-	echo " -------- Norme avancee :"
 	findError=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 $codeFile | grep -nE '('"$forbidEndingCharsRegex"')$' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*')"
 			if [[ ! -z "$grepRes" ]]; then
-				print_error "Erreur de norme dans le fichier ${codeFile} :"
+				print_error "Operateur en fin de ligne dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
 		done)
 	if [[ -z "$findError" ]]; then
-		print_ok "OK."
+		return 0
 	else
 		echo "$findError"
+		return 1
+	fi
+}
+
+function check_advanced_norme
+{
+	echo " -------- Norme avancee :"
+	if advanced_norme_check_forbidendingchars; then
+		print_ok "OK."
 	fi
 }
 
@@ -397,6 +407,8 @@ while [[ "$idx" != "$argc" ]]; do
 			else
 				forbidEndingChars="$param"
 			fi
+		elif [[ "$param" == "--strictendingop" ]] || [[ "$param" == "-seo" ]]; then
+			forbidEndingChars="&|/*-+,="
 		elif [[ "$param" == "--noauthorfile" ]] || [[ "$param" == "-naf" ]]; then
 			checkAuthorFile="false"
 		elif [[ "$param" == "--nonorme" ]] || [[ "$param" == "-nn" ]]; then
