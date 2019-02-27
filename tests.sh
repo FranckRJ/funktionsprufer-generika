@@ -180,10 +180,35 @@ function advanced_norme_check_forbidendingchars
 	fi
 }
 
+function advanced_norme_check_parenthesis
+{
+	findError=$(find "$dirToCheck" -name "*.h" -print0 |
+		while IFS= read -r -d $'\0' codeFile; do
+			grepRes="$(tail -n +12 $codeFile | grep -nE '\(\)' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*')"
+			if [[ ! -z "$grepRes" ]]; then
+				print_error "Parentheses sans contenu dans le fichier ${codeFile} :"
+				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
+			fi
+		done)
+	if [[ -z "$findError" ]]; then
+		return 0
+	else
+		echo "$findError"
+		return 1
+	fi
+}
+
 function check_advanced_norme
 {
+	errorFound="false"
 	echo " -------- Norme avancee :"
-	if advanced_norme_check_forbidendingchars; then
+	if ! advanced_norme_check_forbidendingchars; then
+		errorFound="true"
+	fi
+	if ! advanced_norme_check_parenthesis; then
+		errorFound="true"
+	fi
+	if [[ "$errorFound" == "false" ]]; then
 		print_ok "OK."
 	fi
 }
