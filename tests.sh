@@ -13,7 +13,7 @@ dirToCheckIsCustom="false"
 execToCheck=""
 authors=""
 authorizedFuncs=""
-forbidEndingChars="&|/*-+"
+forbidEndingChars="&|/*-+!"
 checkAuthorFile="true"
 checkNorme="true"
 checkAdvancedNorme="true"
@@ -34,7 +34,7 @@ Les verifications de norme avancee et des auteurs du code depend de la norme, si
 de la norme echoue ces tests ont un compertement indetermine.
 
 La norme avancee peut contenir des faux positifs, son resultat doit etre verifie manuellement.
-La liste par defaut des operateurs interdits en fin de ligne est & | / * - +.
+La liste par defaut des operateurs interdits en fin de ligne est & | / * - + !.
 
 LISTE DES COMMANDES :
 <chemin_vers_projet>              Specifie le chemin vers le projet a tester.
@@ -45,7 +45,7 @@ LISTE DES COMMANDES :
 --funcs / -f <lst>                Specifie la liste des fonctions autorisees.
 --forbidendingop / -feo <lst>     Specifie la liste des operateurs interdits en fin de ligne.
 --strictendingop / -seo           La liste des operateurs interdits sera remplacee par une liste
-                                  plus stricte ( & | / * - + , = ).
+                                  plus stricte ( & | / * - + ! , = ).
 
 --noauthorfile / -naf             Desactive la verification du fichier auteur.
 --nonorme / -nn                   Desactive la verification de la norme.
@@ -505,7 +505,7 @@ while [[ "$idx" != "$argc" ]]; do
 				forbidEndingChars="$param"
 			fi
 		elif [[ "$param" == "--strictendingop" ]] || [[ "$param" == "-seo" ]]; then
-			forbidEndingChars="&|/*-+,="
+			forbidEndingChars="&|/*-+!,="
 		elif [[ "$param" == "--noauthorfile" ]] || [[ "$param" == "-naf" ]]; then
 			checkAuthorFile="false"
 		elif [[ "$param" == "--nonorme" ]] || [[ "$param" == "-nn" ]]; then
