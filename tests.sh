@@ -250,6 +250,49 @@ function check_author_of_code
 	fi
 }
 
+# $1 = liste des paires clefs / vals, $2 = clef a chercher
+function get_val_of_key
+{
+	valOfKey="$(echo "${1}" | grep -E "^${2}:" | cut -d":" -f2)"
+	if [[ -z "$valOfKey" ]]; then
+		valOfKey="0"
+	fi
+	echo "$valOfKey"
+}
+
+# $1 = liste des paires clefs / vals, $2 = clef a set, $3 = nouvelle valeur
+function set_val_of_key
+{
+	newList="$(echo "${1}" | grep -vE "^${2}:")"
+	newList="$newList
+$(echo "${2}:${3}")"
+	echo "$newList"
+}
+
+function show_percentage_author_of_code
+{
+	createdAuthorList=""
+	updatedAuthorList=""
+	findResult=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -not -path "$dirToCheck""/libft/*" -print0 |
+		(while IFS= read -r -d $'\0' codeFile; do
+			createdAuthor="$(head -n 11 "$codeFile" | perl -ne '/Created\:[^b]*by ([^ ]*)/ && print "$1"')"
+			updatedAuthor="$(head -n 11 "$codeFile" | perl -ne '/Updated\:[^b]*by ([^ ]*)/ && print "$1"')"
+
+			nbTimesCreatedAuthor="$(get_val_of_key "$createdAuthorList" "$createdAuthor")"
+			(( ++nbTimesCreatedAuthor ))
+			createdAuthorList="$(set_val_of_key "$createdAuthorList" "$createdAuthor" "$nbTimesCreatedAuthor")"
+
+			nbTimesUpdatedAuthor="$(get_val_of_key "$updatedAuthorList" "$updatedAuthor")"
+			(( ++nbTimesUpdatedAuthor ))
+			updatedAuthorList="$(set_val_of_key "$updatedAuthorList" "$updatedAuthor" "$nbTimesUpdatedAuthor")"
+		done
+		echo "Cree :"
+		echo "${createdAuthorList:1}"
+		echo "Modifie :"
+		echo "${updatedAuthorList:1}"))
+	echo "$findResult"
+}
+
 function makefile_check_fclean
 {
 	if ! make fclean -C "$dirToCheck" &> /dev/null; then
@@ -535,3 +578,5 @@ if [[ "$checkForbidFunc" == "true" ]]; then
 	make $makeFlags -C "$dirToCheck" &> /dev/null
 	check_forbidden_func
 fi
+#TODO
+#show_percentage_author_of_code
