@@ -382,6 +382,10 @@ function check_makefile
 		print_error "ERREUR : Makefile non trouve."
 		return
 	fi
+	if [[ -z "$execToCheck" ]]; then
+		echo "Executable non initialise."
+		return
+	fi
 	if ! makefile_check_clean; then
 		return
 	fi
