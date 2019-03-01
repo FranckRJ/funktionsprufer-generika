@@ -18,6 +18,7 @@ checkAuthorFile="true"
 checkNorme="true"
 checkAdvancedNorme="true"
 checkCodeAuthors="true"
+showCodeAuthorsDetail="true"
 checkMakefile="true"
 checkForbidFunc="true"
 defaultCheckAreDisabled="false"
@@ -51,6 +52,7 @@ LISTE DES COMMANDES :
 --nonorme / -nn                   Desactive la verification de la norme.
 --noadvancednorme / -nan          Desactive la verification de la norme avancee.
 --nocodeauthors / -nca            Desactive la verification des auteurs du code.
+--nocodeauthorsdetail / -ncad     Desactive l'affichage du detail des auteurs du code.
 --nomakefile / -nmf               Desactive la verification du Makefile.
 --noforbidfunc / -nff             Desactive la verification des fonctions interdites.
 
@@ -58,6 +60,7 @@ LISTE DES COMMANDES :
 --onlynorme / -on                 Active uniquement la verification de la norme.
 --onlyadvancednorme / -oan        Active uniquement la verification de la norme avancee.
 --onlycodeauthors / -oca          Active uniquement la verification des auteurs du code.
+--onlycodeauthorsdetail / -ocad   Active uniquement l'affichage du detail des auteurs du code.
 --onlymakefile / -omf             Active uniquement la verification du Makefile.
 --onlyforbidfunc / -off           Active uniquement la verification des fonctions interdites.
 
@@ -81,6 +84,13 @@ function print_error
 function print_ok
 {
 	echo -e -n "$OK_COLOR"
+	echo -n "$1"
+	echo -e "$RESET_COLOR"
+}
+
+function print_info
+{
+	echo -e -n "$INFO_COLOR"
 	echo -n "$1"
 	echo -e "$RESET_COLOR"
 }
@@ -269,10 +279,11 @@ $(echo "${2}:${3}")"
 	echo "$newList"
 }
 
-function show_percentage_author_of_code
+function show_detail_author_of_code
 {
 	createdAuthorList=""
 	updatedAuthorList=""
+	echo " -------- Detail des auteurs du code :"
 	findResult=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -not -path "$dirToCheck""/libft/*" -print0 |
 		(while IFS= read -r -d $'\0' codeFile; do
 			createdAuthor="$(head -n 11 "$codeFile" | perl -ne '/Created\:[^b]*by ([^ ]*)/ && print "$1"')"
@@ -286,9 +297,9 @@ function show_percentage_author_of_code
 			(( ++nbTimesUpdatedAuthor ))
 			updatedAuthorList="$(set_val_of_key "$updatedAuthorList" "$updatedAuthor" "$nbTimesUpdatedAuthor")"
 		done
-		echo "Cree :"
+		print_info "Fichiers crees :"
 		echo "${createdAuthorList:1}"
-		echo "Modifie :"
+		print_info "Fichiers modifies en dernier :"
 		echo "${updatedAuthorList:1}"))
 	echo "$findResult"
 }
@@ -518,6 +529,8 @@ while [[ "$idx" != "$argc" ]]; do
 			checkAdvancedNorme="false"
 		elif [[ "$param" == "--nocodeauthors" ]] || [[ "$param" == "-nca" ]]; then
 			checkCodeAuthors="false"
+		elif [[ "$param" == "--nocodeauthorsdetail" ]] || [[ "$param" == "-ncad" ]]; then
+			showCodeAuthorsDetail="false"
 		elif [[ "$param" == "--nomakefile" ]] || [[ "$param" == "-nmf" ]]; then
 			checkMakefile="false"
 		elif [[ "$param" == "--noforbidfunc" ]] || [[ "$param" == "-nff" ]]; then
@@ -534,6 +547,9 @@ while [[ "$idx" != "$argc" ]]; do
 		elif [[ "$param" == "--onlycodeauthors" ]] || [[ "$param" == "-oca" ]]; then
 			disable_default_check
 			checkCodeAuthors="true"
+		elif [[ "$param" == "--onlycodeauthorsdetail" ]] || [[ "$param" == "-ocad" ]]; then
+			disable_default_check
+			showCodeAuthorsDetail="true"
 		elif [[ "$param" == "--onlymakefile" ]] || [[ "$param" == "-omf" ]]; then
 			disable_default_check
 			checkMakefile="true"
@@ -575,6 +591,9 @@ fi
 if [[ "$checkCodeAuthors" == "true" ]]; then
 	check_author_of_code
 fi
+if [[ "$showCodeAuthorsDetail" == "true" ]]; then
+	show_detail_author_of_code
+fi
 if [[ "$checkMakefile" == "true" ]]; then
 	check_makefile
 fi
@@ -582,5 +601,3 @@ if [[ "$checkForbidFunc" == "true" ]]; then
 	make $makeFlags -C "$dirToCheck" &> /dev/null
 	check_forbidden_func
 fi
-#TODO
-#show_percentage_author_of_code
