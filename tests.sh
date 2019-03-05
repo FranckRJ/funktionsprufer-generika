@@ -24,6 +24,7 @@ checkForbidFunc="true"
 defaultCheckAreDisabled="false"
 makeFlags=""
 makeReFlags=""
+dirToExcludeFromCodeAuthorDetail=""
 
 function print_help
 {
@@ -38,37 +39,40 @@ La norme avancee peut contenir des faux positifs, son resultat doit etre verifie
 La liste par defaut des operateurs interdits en fin de ligne est & |.
 
 LISTE DES COMMANDES :
-<chemin_vers_projet>              Specifie le chemin vers le projet a tester.
+<chemin_vers_projet>                  Specifie le chemin vers le projet a tester.
 
---authors / -a <lst>              Specifie la liste des auteurs, avec un ':' comme
-                                  separateur. La liste ne peut pas contenir d'espaces.
---exec / -e <name>                Specifie le nom de l'executable du projet.
---funcs / -f <lst>                Specifie la liste des fonctions autorisees.
---forbidendingop / -feo <lst>     Specifie la liste des operateurs interdits en fin de ligne.
---strictendingop / -seo           La liste des operateurs interdits sera remplacee par une liste
-                                  plus stricte ( & | / * - + ! , = < > ).
+--authors / -a <lst>                  Specifie la liste des auteurs, avec un ':' comme
+                                      separateur. La liste ne peut pas contenir d'espaces.
+--exec / -e <name>                    Specifie le nom de l'executable du projet.
+--funcs / -f <lst>                    Specifie la liste des fonctions autorisees.
+--forbidendingop / -feo <lst>         Specifie la liste des operateurs interdits en fin de ligne.
+--strictendingop / -seo               La liste des operateurs interdits sera remplacee par une liste
+                                      plus stricte ( & | / * - + ! , = < > ).
+--excludecodeauthdir / -ecad <name>   Ne prend pas en compte les fichiers du dossier passe en
+                                      parametre pour le detail des auteurs du code. Si laisse vide
+                                      vaut "libft".
 
---noauthorfile / -naf             Desactive la verification du fichier auteur.
---nonorme / -nn                   Desactive la verification de la norme.
---noadvancednorme / -nan          Desactive la verification de la norme avancee.
---nocodeauthors / -nca            Desactive la verification des auteurs du code.
---nocodeauthorsdetail / -ncad     Desactive l'affichage du detail des auteurs du code.
---nomakefile / -nmf               Desactive la verification du Makefile.
---noforbidfunc / -nff             Desactive la verification des fonctions interdites.
+--noauthorfile / -naf                 Desactive la verification du fichier auteur.
+--nonorme / -nn                       Desactive la verification de la norme.
+--noadvancednorme / -nan              Desactive la verification de la norme avancee.
+--nocodeauthors / -nca                Desactive la verification des auteurs du code.
+--nocodeauthorsdetail / -ncad         Desactive l'affichage du detail des auteurs du code.
+--nomakefile / -nmf                   Desactive la verification du Makefile.
+--noforbidfunc / -nff                 Desactive la verification des fonctions interdites.
 
---onlyauthorfile / -oaf           Active uniquement la verification du fichier auteur.
---onlynorme / -on                 Active uniquement la verification de la norme.
---onlyadvancednorme / -oan        Active uniquement la verification de la norme avancee.
---onlycodeauthors / -oca          Active uniquement la verification des auteurs du code.
---onlycodeauthorsdetail / -ocad   Active uniquement l'affichage du detail des auteurs du code.
---onlymakefile / -omf             Active uniquement la verification du Makefile.
---onlyforbidfunc / -off           Active uniquement la verification des fonctions interdites.
+--onlyauthorfile / -oaf               Active uniquement la verification du fichier auteur.
+--onlynorme / -on                     Active uniquement la verification de la norme.
+--onlyadvancednorme / -oan            Active uniquement la verification de la norme avancee.
+--onlycodeauthors / -oca              Active uniquement la verification des auteurs du code.
+--onlycodeauthorsdetail / -ocad       Active uniquement l'affichage du detail des auteurs du code.
+--onlymakefile / -omf                 Active uniquement la verification du Makefile.
+--onlyforbidfunc / -off               Active uniquement la verification des fonctions interdites.
 
---makej                           Active l'option -j pour les make normaux.
---makerej                         Active l'option -j pour les make re.
---makeallj                        Active l'option -j pour les make re et normaux.
+--makej                               Active l'option -j pour les make normaux.
+--makerej                             Active l'option -j pour les make re.
+--makeallj                            Active l'option -j pour les make re et normaux.
 
---help / -h                       Affiche cette page d'aide.
+--help / -h                           Affiche cette page d'aide.
 EOM
 
 echo "$HELP_TEXT"
@@ -288,8 +292,11 @@ function show_detail_author_of_code
 {
 	createdAuthorList=""
 	updatedAuthorList=""
+	if [[ -z "$dirToExcludeFromCodeAuthorDetail" ]]; then
+		dirToExcludeFromCodeAuthorDetail="libft"
+	fi
 	echo " -------- Detail des auteurs du code :"
-	findResult=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -not -path "$dirToCheck""/libft/*" -print0 |
+	findResult=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -not -path "$dirToCheck"/"$dirToExcludeFromCodeAuthorDetail"/* -print0 |
 		(while IFS= read -r -d $'\0' codeFile; do
 			createdAuthor="$(head -n 11 "$codeFile" | perl -ne '/Created\:[^b]*by ([^ ]*)/ && print "$1"')"
 			updatedAuthor="$(head -n 11 "$codeFile" | perl -ne '/Updated\:[^b]*by ([^ ]*)/ && print "$1"')"
@@ -526,6 +533,15 @@ while [[ "$idx" != "$argc" ]]; do
 			fi
 		elif [[ "$param" == "--strictendingop" ]] || [[ "$param" == "-seo" ]]; then
 			forbidEndingChars="&|/*-+!,=<>"
+		elif [[ "$param" == "--excludecodeauthdir" ]] || [[ "$param" == "-ecad" ]]; then
+			(( ++idx ))
+			param="${argv[$idx]}"
+			if [[ -z "$param" ]]; then
+				echo "Erreur : le parametre dossier exclu du detail des auteurs du code ne doit pas etre vide."
+				exit 0
+			else
+				dirToExcludeFromCodeAuthorDetail="$param"
+			fi
 		elif [[ "$param" == "--noauthorfile" ]] || [[ "$param" == "-naf" ]]; then
 			checkAuthorFile="false"
 		elif [[ "$param" == "--nonorme" ]] || [[ "$param" == "-nn" ]]; then
