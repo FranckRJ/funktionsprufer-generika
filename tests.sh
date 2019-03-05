@@ -36,7 +36,7 @@ Les verifications de norme avancee et des auteurs du code depend de la norme, si
 de la norme echoue ces tests ont un compertement indetermine.
 
 La norme avancee peut contenir des faux positifs, son resultat doit etre verifie manuellement.
-La liste par defaut des operateurs interdits en fin de ligne est & |.
+La liste par defaut des operateurs interdits en fin de ligne est "& |".
 
 LISTE DES COMMANDES :
 <chemin_vers_projet>                  Specifie le chemin vers le projet a tester.
@@ -47,7 +47,7 @@ LISTE DES COMMANDES :
 --funcs / -f <lst>                    Specifie la liste des fonctions autorisees.
 --forbidendingop / -feo <lst>         Specifie la liste des operateurs interdits en fin de ligne.
 --strictendingop / -seo               La liste des operateurs interdits sera remplacee par une liste
-                                      plus stricte ( & | / * - + ! , = < > ).
+                                      plus stricte "& | / * - + ! , = < >".
 --excludecodeauthdir / -ecad <name>   Ne prend pas en compte les fichiers du dossier passe en
                                       parametre pour le detail des auteurs du code. Si laisse vide
                                       vaut "libft".
@@ -494,11 +494,11 @@ while [[ "$idx" != "$argc" ]]; do
 			(( ++idx ))
 			param="${argv[$idx]}"
 			if [[ -z "$param" ]]; then
-				echo "Erreur : le parametre auteurs ne doit pas etre vide."
+				echo "Erreur : le parametre \"auteurs\" ne doit pas etre vide."
 				exit 0
 			else
 				if [[ "$param" =~ \  ]]; then
-					echo "Erreur : le parametre auteurs ne peut pas contenir d'espaces."
+					echo "Erreur : le parametre \"auteurs\" ne peut pas contenir d'espaces."
 					exit 0
 				else
 					authors="$param"
@@ -508,7 +508,7 @@ while [[ "$idx" != "$argc" ]]; do
 			(( ++idx ))
 			param="${argv[$idx]}"
 			if [[ -z "$param" ]]; then
-				echo "Erreur : le parametre executable ne doit pas etre vide."
+				echo "Erreur : le parametre \"executable\" ne doit pas etre vide."
 				exit 0
 			else
 				execToCheck="$param"
@@ -517,7 +517,7 @@ while [[ "$idx" != "$argc" ]]; do
 			(( ++idx ))
 			param="${argv[$idx]}"
 			if [[ -z "$param" ]]; then
-				echo "Erreur : le parametre fonctions ne doit pas etre vide."
+				echo "Erreur : le parametre \"fonctions\" ne doit pas etre vide."
 				exit 0
 			else
 				authorizedFuncs="$param"
@@ -526,7 +526,7 @@ while [[ "$idx" != "$argc" ]]; do
 			(( ++idx ))
 			param="${argv[$idx]}"
 			if [[ -z "$param" ]]; then
-				echo "Erreur : le parametre operateurs interdits en fin de ligne ne doit pas etre vide."
+				echo "Erreur : le parametre \"operateurs interdits en fin de ligne\" ne doit pas etre vide."
 				exit 0
 			else
 				forbidEndingChars="$param"
@@ -537,7 +537,7 @@ while [[ "$idx" != "$argc" ]]; do
 			(( ++idx ))
 			param="${argv[$idx]}"
 			if [[ -z "$param" ]]; then
-				echo "Erreur : le parametre dossier exclu du detail des auteurs du code ne doit pas etre vide."
+				echo "Erreur : le parametre \"dossier exclu du detail des auteurs du code\" ne doit pas etre vide."
 				exit 0
 			else
 				dirToExcludeFromCodeAuthorDetail="$param"
@@ -585,7 +585,7 @@ while [[ "$idx" != "$argc" ]]; do
 			makeFlags="-j"
 			makeReFlags="-j"
 		else
-			echo "Erreur : parametre $param inconnu. Utilisez --help pour afficher l'aide."
+			echo "Erreur : parametre \"$param\" inconnu. Utilisez --help pour afficher l'aide."
 			exit 0
 		fi
 	else
