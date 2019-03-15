@@ -319,7 +319,7 @@ function show_detail_author_of_code
 function makefile_check_fclean
 {
 	if ! make fclean -C "$dirToCheck" &> /dev/null; then
-		print_error "ERREUR : la regle fclean n'existe pas."
+		print_error "ERREUR : la regle fclean n'existe pas ou est invalide."
 		return 1
 	fi
 	if [[ -f "$dirToCheck"/"$execToCheck" ]]; then
@@ -336,7 +336,7 @@ function makefile_check_clean
 		execWasHere="true"
 	fi
 	if ! make clean -C "$dirToCheck" &> /dev/null; then
-		print_error "ERREUR : la regle clean n'existe pas."
+		print_error "ERREUR : la regle clean n'existe pas ou est invalide."
 		return 1
 	fi
 	if [[ "$execWasHere" == "true" ]] && [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
@@ -354,7 +354,7 @@ function makefile_check_make
 		sleep 2 #pour etre certain que le nouvel executable a un nouveau timestamp s'il relink.
 	fi
 	if ! make $makeFlags -C "$dirToCheck" &> /dev/null; then
-		print_error "ERREUR : la regle par defaut n'existe pas."
+		print_error "ERREUR : la regle par defaut n'existe pas ou est invalide."
 		return 1
 	fi
 	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
@@ -373,7 +373,7 @@ function makefile_check_make
 function makefile_check_all_exist
 {
 	if ! make $makeFlags all -C "$dirToCheck" &> /dev/null; then
-		print_error "ERREUR : la regle all n'existe pas."
+		print_error "ERREUR : la regle all n'existe pas ou est invalide."
 		return 1
 	fi
 	return 0
@@ -384,7 +384,7 @@ function makefile_check_re
 	execTimestamp=$(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null)
 	sleep 2 #pour etre certain que le nouvel executable a un nouveau timestamp.
 	if ! make $makeReFlags re -C "$dirToCheck" &> /dev/null; then
-		print_error "ERREUR : la regle re n'existe pas."
+		print_error "ERREUR : la regle re n'existe pas ou est invalide."
 		return 1
 	fi
 	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
