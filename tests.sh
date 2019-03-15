@@ -329,6 +329,14 @@ function makefile_check_fclean
 	return 0
 }
 
+function makefile_check_wildcard
+{
+	wildcardInMakefile="$(grep -i "wildcard" "$dirToCheck"/Makefile)"
+	if [[ ! -z "$wildcardInMakefile" ]]; then
+		print_error "ERREUR : le makefile utilise des wildcards."
+	fi
+}
+
 function makefile_check_clean
 {
 	execWasHere="false"
@@ -409,6 +417,7 @@ function check_makefile
 		echo "Executable non initialise."
 		return
 	fi
+	makefile_check_wildcard
 	if ! makefile_check_clean; then
 		return
 	fi
