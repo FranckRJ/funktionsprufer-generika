@@ -205,6 +205,24 @@ function advanced_norme_check_forbidendingchars
 	fi
 }
 
+function advanced_norme_check_brackets
+{
+	findError=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
+		while IFS= read -r -d $'\0' codeFile; do
+			grepRes="$(tail -n +12 $codeFile | grep -nE '({|})' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '({|})$' | grep -vE "'({|})'" | perl -ne '/^(?![0-9]*:[ \t]*}([ \t]*t_[a-zA-Z0-9_]*;|;)$)(.*)$/ && print "$2\n"')"
+			if [[ ! -z "$grepRes" ]]; then
+				print_error "Accolades sans retour a la ligne dans le fichier ${codeFile} :"
+				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
+			fi
+		done)
+	if [[ -z "$findError" ]]; then
+		return 0
+	else
+		echo "$findError"
+		return 1
+	fi
+}
+
 function advanced_norme_check_parenthesis
 {
 	findError=$(find "$dirToCheck" -name "*.h" -print0 |
@@ -230,6 +248,10 @@ function check_advanced_norme
 	if ! advanced_norme_check_forbidendingchars; then
 		errorFound="true"
 	fi
+# Pas sur que ce soit une bonne idee finalement, et faut virer les brackets dans des double quote aussi.
+#	if ! advanced_norme_check_brackets; then
+#		errorFound="true"
+#	fi
 	if ! advanced_norme_check_parenthesis; then
 		errorFound="true"
 	fi
