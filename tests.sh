@@ -47,7 +47,7 @@ LISTE DES COMMANDES :
 --funcs / -f <lst>                    Specifie la liste des fonctions autorisees.
 --forbidendingop / -feo <lst>         Specifie la liste des operateurs interdits en fin de ligne.
 --strictendingop / -seo               La liste des operateurs interdits sera remplacee par une liste
-                                      plus stricte "& | / * - + ! , = < >".
+                                      plus stricte "& | / * - + ! , = < > ? :".
 --excludecodeauthdir / -ecad <name>   Ne prend pas en compte les fichiers du dossier passe en
                                       parametre pour le detail des auteurs du code. Si laisse vide
                                       vaut "libft".
@@ -532,7 +532,7 @@ while [[ "$idx" != "$argc" ]]; do
 				forbidEndingChars="$param"
 			fi
 		elif [[ "$param" == "--strictendingop" ]] || [[ "$param" == "-seo" ]]; then
-			forbidEndingChars="&|/*-+!,=<>"
+			forbidEndingChars="&|/*-+!,=<>?:"
 		elif [[ "$param" == "--excludecodeauthdir" ]] || [[ "$param" == "-ecad" ]]; then
 			(( ++idx ))
 			param="${argv[$idx]}"
