@@ -331,9 +331,9 @@ function makefile_check_fclean
 
 function makefile_check_wildcard
 {
-	wildcardInMakefile="$(grep -i "wildcard" "$dirToCheck"/Makefile)"
+	wildcardInMakefile="$(grep -iE '(wildcard|\*.c|\*.h)' "$dirToCheck"/Makefile)"
 	if [[ ! -z "$wildcardInMakefile" ]]; then
-		print_error "ERREUR : le makefile utilise des wildcards."
+		print_error "ERREUR : le Makefile utilise des wildcards."
 	fi
 }
 
