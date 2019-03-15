@@ -316,19 +316,6 @@ function show_detail_author_of_code
 	echo "$findResult"
 }
 
-function makefile_check_fclean
-{
-	if ! make fclean -C "$dirToCheck" &> /dev/null; then
-		print_error "ERREUR : la regle fclean n'existe pas ou est invalide."
-		return 1
-	fi
-	if [[ -f "$dirToCheck"/"$execToCheck" ]]; then
-		print_error "ERREUR : make fclean ne supprime pas l'executable."
-		return 1
-	fi
-	return 0
-}
-
 function makefile_check_wildcard
 {
 	wildcardInMakefile="$(grep -iE '(wildcard|\*.c|\*.h)' "$dirToCheck"/Makefile)"
@@ -349,6 +336,19 @@ function makefile_check_clean
 	fi
 	if [[ "$execWasHere" == "true" ]] && [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
 		print_error "ERREUR : make clean a supprime l'executable."
+		return 1
+	fi
+	return 0
+}
+
+function makefile_check_fclean
+{
+	if ! make fclean -C "$dirToCheck" &> /dev/null; then
+		print_error "ERREUR : la regle fclean n'existe pas ou est invalide."
+		return 1
+	fi
+	if [[ -f "$dirToCheck"/"$execToCheck" ]]; then
+		print_error "ERREUR : make fclean ne supprime pas l'executable."
 		return 1
 	fi
 	return 0
@@ -378,15 +378,6 @@ function makefile_check_make
 	return 0
 }
 
-function makefile_check_all_exist
-{
-	if ! make $makeFlags all -C "$dirToCheck" &> /dev/null; then
-		print_error "ERREUR : la regle all n'existe pas ou est invalide."
-		return 1
-	fi
-	return 0
-}
-
 function makefile_check_re
 {
 	execTimestamp=$(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null)
@@ -401,6 +392,32 @@ function makefile_check_re
 	fi
 	if [[ "$execTimestamp" == $(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null) ]]; then
 		print_error "ERREUR : make re n'a pas recompile l'executable."
+		return 1
+	fi
+	return 0
+}
+
+function makefile_check_all_exist
+{
+	if ! make $makeFlags all -C "$dirToCheck" &> /dev/null; then
+		print_error "ERREUR : la regle all n'existe pas ou est invalide."
+		return 1
+	fi
+	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
+		print_error "ERREUR : make all n'a pas cree l'executable."
+		return 1
+	fi
+	return 0
+}
+
+function makefile_check_name_exist
+{
+	if ! make $makeFlags "$execToCheck" -C "$dirToCheck" &> /dev/null; then
+		print_error "ERREUR : la regle \$(NAME) n'existe pas ou est invalide."
+		return 1
+	fi
+	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
+		print_error "ERREUR : make \$(NAME) n'a pas cree l'executable."
 		return 1
 	fi
 	return 0
@@ -433,9 +450,6 @@ function check_makefile
 	if ! makefile_check_make true; then
 		return
 	fi
-	if ! makefile_check_all_exist; then
-		return
-	fi
 	if ! makefile_check_fclean; then
 		return
 	fi
@@ -458,6 +472,18 @@ function check_makefile
 		return
 	fi
 	if ! makefile_check_re; then
+		return
+	fi
+	if ! makefile_check_fclean; then
+		return
+	fi
+	if ! makefile_check_all_exist; then
+		return
+	fi
+	if ! makefile_check_fclean; then
+		return
+	fi
+	if ! makefile_check_name_exist; then
 		return
 	fi
 	print_ok "OK."
