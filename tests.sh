@@ -245,6 +245,24 @@ function advanced_norme_check_parenthesis
 	fi
 }
 
+function advanced_norme_check_const_init
+{
+	findError=$(find "$dirToCheck" -name "*.c" -print0 |
+		while IFS= read -r -d $'\0' codeFile; do
+			grepRes="$(tail -n +12 $codeFile | grep -nE '=' | grep -vE 'static' | perl -ne '/^([0-9]*:[\t]+[a-zA-Z0-9_ \t*]*const.*)$/ && print "$1\n"')"
+			if [[ ! -z "$grepRes" ]]; then
+				print_error "Initialisation dans une declaration dans le fichier ${codeFile} :"
+				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
+			fi
+		done)
+	if [[ -z "$findError" ]]; then
+		return 0
+	else
+		echo "$findError"
+		return 1
+	fi
+}
+
 function check_advanced_norme
 {
 	errorFound="false"
@@ -257,6 +275,9 @@ function check_advanced_norme
 #		errorFound="true"
 #	fi
 	if ! advanced_norme_check_parenthesis; then
+		errorFound="true"
+	fi
+	if ! advanced_norme_check_const_init; then
 		errorFound="true"
 	fi
 	if [[ "$errorFound" == "false" ]]; then
