@@ -8,8 +8,7 @@ RESET_COLOR="\033[0m"
 #Desactivation du globbing parce que ca peut poser probleme et que ca sert a rien pour ce script (je suppose).
 set -f
 
-dirToCheck="."
-dirToCheckIsCustom="false"
+dirToCheck=""
 execToCheck=""
 authors=""
 authorizedFuncs=""
@@ -128,7 +127,7 @@ function check_author_file
 		print_error "ERREUR : fichier non trouve."
 		return
 	fi
-	if [[ -z $authors ]]; then
+	if [[ -z "$authors" ]]; then
 		echo "Auteurs non initialises."
 		return
 	fi
@@ -288,7 +287,7 @@ function check_advanced_norme
 function check_author_of_code
 {
 	echo " -------- Auteurs du code :"
-	if [[ -z $authors ]]; then
+	if [[ -z "$authors" ]]; then
 		echo "Auteurs non initialises."
 		return
 	fi
@@ -673,9 +672,8 @@ while [[ "$idx" != "$argc" ]]; do
 			exit 0
 		fi
 	else
-		if [[ "$dirToCheckIsCustom" == "false" ]]; then
+		if [[ -z "$dirToCheck" ]]; then
 			dirToCheck="$param"
-			dirToCheckIsCustom="true"
 		else
 			echo "Trop d'arguments, le dossier du projet ne peut etre initialise qu'une fois. Utilisez --help pour afficher l'aide."
 			exit 0
@@ -683,6 +681,11 @@ while [[ "$idx" != "$argc" ]]; do
 	fi
 	(( ++idx ))
 done
+
+if [[ -z "$dirToCheck" ]]; then
+	echo "Le dossier du projet n'a pas ete initialise. Utilisez --help pour afficher l'aide."
+	exit 0
+fi
 
 if [[ "$checkAuthorFile" == "true" ]]; then
 	check_author_file
