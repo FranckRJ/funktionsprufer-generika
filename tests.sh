@@ -12,7 +12,7 @@ dirToCheck=""
 execToCheck=""
 authors=""
 authorizedFuncs=""
-forbidEndingChars="&|"
+forbidEndingChars="@&&@||"
 checkAuthorFile="true"
 checkNorme="true"
 checkAdvancedNorme="true"
@@ -35,7 +35,7 @@ Les verifications de norme avancee et des auteurs du code depend de la norme, si
 de la norme echoue ces tests ont un compertement indetermine.
 
 La norme avancee peut contenir des faux positifs, son resultat doit etre verifie manuellement.
-La liste par defaut des operateurs interdits en fin de ligne est "& |".
+La liste par defaut des operateurs interdits en fin de ligne est "&& ||".
 
 LISTE DES COMMANDES :
 <chemin_vers_projet>                  Specifie le chemin vers le projet a tester.
@@ -46,9 +46,9 @@ LISTE DES COMMANDES :
 --funcs / -f <lst>                    Specifie la liste des fonctions autorisees.
 --forbidendingop / -feo <lst>         Specifie la liste des operateurs interdits en fin de ligne.
 --strictendingop / -seo               La liste des operateurs interdits sera remplacee par une liste
-                                      plus stricte "& | / * - + % ! < > ? : ==".
+                                      plus stricte "& | / * - + % ! < > ? : ~ ^ == != >= <=".
 --superstrictendingop / -sseo         La liste des operateurs interdits sera remplacee par une liste
-                                      extremement stricte "& | / * - + % ! < > ? : , =".
+                                      extremement stricte "& | / * - + % ! < > ? : ~ ^ , =".
 --excludecodeauthdir / -ecad <name>   Ne prend pas en compte les fichiers du dossier passe en
                                       parametre pour le detail des auteurs du code. Si laisse vide
                                       vaut "libft".
@@ -175,26 +175,38 @@ function check_norme
 	fi
 }
 
+# $1 = un seul caractere a potentiellement echapper
+function print_escaped_char_for_regex_if_needed
+{
+	if [[ "$1" =~ ['\\\^\$\.\|\?\*\+\(\)\[\{'] ]]; then
+		echo "\\$1"
+	else
+		echo "$1"
+	fi
+}
+
 function advanced_norme_check_forbidendingchars
 {
-	forbidEndingCharsRegex=""
+	forbidEndingCharsRegex='('
 	isFirstCharAdded="true"
 	for (( i=0; i<${#forbidEndingChars}; i++ )); do
 		if [[ "$isFirstCharAdded" == "false" ]]; then
 			forbidEndingCharsRegex="${forbidEndingCharsRegex}|"
 		fi
 		isFirstCharAdded="false"
-		if [[ "${forbidEndingChars:$i:1}" =~ [\>\<] ]]; then
-			forbidEndingCharsRegex="${forbidEndingCharsRegex}${forbidEndingChars:$i:1}"
-		elif [[ "${forbidEndingChars:$i:1}" == '@' ]]; then
-			forbidEndingCharsRegex="${forbidEndingCharsRegex}=="
+		if [[ "${forbidEndingChars:$i:1}" == '@' ]]; then
+			(( ++i ))
+			forbidEndingCharsRegex="${forbidEndingCharsRegex}$(print_escaped_char_for_regex_if_needed ${forbidEndingChars:$i:1})"
+			(( ++i ))
+			forbidEndingCharsRegex="${forbidEndingCharsRegex}$(print_escaped_char_for_regex_if_needed ${forbidEndingChars:$i:1})"
 		else
-			forbidEndingCharsRegex="${forbidEndingCharsRegex}\\${forbidEndingChars:$i:1}"
+			forbidEndingCharsRegex="${forbidEndingCharsRegex}$(print_escaped_char_for_regex_if_needed ${forbidEndingChars:$i:1})"
 		fi
 	done
+	forbidEndingCharsRegex="${forbidEndingCharsRegex}"')$'
 	findError=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
-			grepRes="$(tail -n +12 $codeFile | grep -nE '('"$forbidEndingCharsRegex"')$' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '^[0-9]*:# *include *<')"
+			grepRes="$(tail -n +12 $codeFile | grep -nE "$forbidEndingCharsRegex" | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '^[0-9]*:# *include *<')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "Operateur en fin de ligne dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
@@ -613,9 +625,9 @@ while [[ "$idx" != "$argc" ]]; do
 				forbidEndingChars="$param"
 			fi
 		elif [[ "$param" == "--strictendingop" ]] || [[ "$param" == "-seo" ]]; then
-			forbidEndingChars="&|/*-+%!<>?:@"
+			forbidEndingChars="&|/*-+%!<>?:~^@==@!=@>=@<="
 		elif [[ "$param" == "--superstrictendingop" ]] || [[ "$param" == "-sseo" ]]; then
-			forbidEndingChars="&|/*-+%!<>?:,="
+			forbidEndingChars="&|/*-+%!<>?:~^,="
 		elif [[ "$param" == "--excludecodeauthdir" ]] || [[ "$param" == "-ecad" ]]; then
 			(( ++idx ))
 			param="${argv[$idx]}"
