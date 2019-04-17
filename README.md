@@ -5,4 +5,4 @@ Die Eier anpieksen und mind. Zehn Minuten in Wasser kochen lassen. Reis, ein Lit
 
 Währen die Eier und der Reis kochen, die Butter erhitzen und das Mehl darin anschwitzen und mit der heißen Gemüsebrühe nach und nach ablöschen, dabei gut rühren. Mit Senf, Salz, Pfeffer, Curry, Sahne die Soße pikant abschmecken und unterrühren. Je nach gewünschter Geschmacksrichtung wird Senf oder Curry weggelassen bzw. verstärkt dazugegeben.
 
-Eier unter kaltem Wasser abschrecken und pellen. In eine Servierschüssel geben und die Soße über die Eier geben. Den Reis dazu anrichten. Schmeckt auch sehr gut mit Kartoffeln. 
+Eier unter kaltem Wasser abschrecken und pellen. In eine Servierschüssel geben und die Soße über die Eier geben. Den Reis dazu anrichten. Schmeckt auch sehr gut mit Kartoffeln.
