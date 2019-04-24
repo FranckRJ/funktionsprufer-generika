@@ -430,7 +430,7 @@ function makefile_check_make
 	if [[ "$1" == "true" ]]; then
 		if [[ "$execTimestamp" != $(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null) ]]; then
 			print_error "ERREUR : make relink."
-			return 1
+			return 2
 		fi
 	fi
 	return 0
@@ -450,7 +450,7 @@ function makefile_check_re
 	fi
 	if [[ "$execTimestamp" == $(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null) ]]; then
 		print_error "ERREUR : make re n'a pas recompile l'executable."
-		return 1
+		return 2
 	fi
 	return 0
 }
@@ -459,11 +459,11 @@ function makefile_check_all_exist
 {
 	if ! make $makeFlags all -C "$dirToCheck" &> /dev/null; then
 		print_error "ERREUR : la regle all n'existe pas ou est invalide."
-		return 1
+		return 2
 	fi
 	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
 		print_error "ERREUR : make all n'a pas cree l'executable."
-		return 1
+		return 2
 	fi
 	return 0
 }
@@ -472,17 +472,18 @@ function makefile_check_name_exist
 {
 	if ! make $makeFlags "$execToCheck" -C "$dirToCheck" &> /dev/null; then
 		print_error "ERREUR : la regle \$(NAME) n'existe pas ou est invalide."
-		return 1
+		return 2
 	fi
 	if [[ ! -f "$dirToCheck"/"$execToCheck" ]]; then
 		print_error "ERREUR : make \$(NAME) n'a pas cree l'executable."
-		return 1
+		return 2
 	fi
 	return 0
 }
 
 function check_makefile
 {
+	errorCount="0"
 	echo " -------- Makefile :"
 	if [[ ! -f "$dirToCheck"/Makefile ]]; then
 		print_error "ERREUR : Makefile non trouve."
@@ -493,58 +494,129 @@ function check_makefile
 		return
 	fi
 	makefile_check_wildcard
-	if ! makefile_check_clean; then
+
+	makefile_check_clean
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_fclean; then
+
+	makefile_check_fclean
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_clean; then
+
+	makefile_check_clean
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_make false; then
+
+	makefile_check_make false
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_make true; then
+
+	makefile_check_make true
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_fclean; then
+
+	makefile_check_fclean
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_re; then
+
+	makefile_check_re
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_clean; then
+
+	makefile_check_clean
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_make false; then
+
+	makefile_check_make false
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_re; then
+
+	makefile_check_re
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_make true; then
+
+	makefile_check_make true
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_clean; then
+
+	makefile_check_clean
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_re; then
+
+	makefile_check_re
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_fclean; then
+
+	makefile_check_fclean
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_all_exist; then
+
+	makefile_check_all_exist
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_fclean; then
+
+	makefile_check_fclean
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	if ! makefile_check_name_exist; then
+
+	makefile_check_name_exist
+	tmpFunctionResult="$?"
+	(( errorCount+=tmpFunctionResult ))
+	if [[ "$tmpFunctionResult" == "1" ]]; then
 		return
 	fi
-	print_ok "OK."
+
+	if [[ "$errorCount" == "0" ]]; then
+		print_ok "OK."
+	fi
 }
 
 function check_forbidden_func
