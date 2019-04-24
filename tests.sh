@@ -1,12 +1,16 @@
 #!/bin/bash
 
+#Suppression de tous les alias (avec echappement pour etre sur que unalias soit pas un alias).
+\un"al"i'as' -a
+#Modification du PATH pour etre sur d'avoir les bons executables.
+PATH=/usr/bin:/bin:/usr/sbin:/sbin
+#Desactivation du globbing parce que ca peut poser probleme et que ca sert a rien pour ce script (je suppose).
+set -f
+
 OK_COLOR="\033[1;32m"
 ERROR_COLOR="\033[1;31m"
 INFO_COLOR="\033[1;33m"
 RESET_COLOR="\033[0m"
-
-#Desactivation du globbing parce que ca peut poser probleme et que ca sert a rien pour ce script (je suppose).
-set -f
 
 dirToCheck=""
 execToCheck=""
