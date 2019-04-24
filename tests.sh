@@ -673,12 +673,12 @@ while [[ "$idx" != "$argc" ]]; do
 			disable_default_check
 			checkForbidFunc="true"
 		elif [[ "$param" == "--makej" ]]; then
-			makeFlags="-j"
+			makeFlags="-j8"
 		elif [[ "$param" == "--makerej" ]]; then
-			makeReFlags="-j"
+			makeReFlags="-j8"
 		elif [[ "$param" == "--makeallj" ]]; then
-			makeFlags="-j"
-			makeReFlags="-j"
+			makeFlags="-j8"
+			makeReFlags="-j8"
 		else
 			echo "Erreur : parametre \"$param\" inconnu. Utilisez --help pour afficher l'aide."
 			exit 0
