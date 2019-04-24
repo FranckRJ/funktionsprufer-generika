@@ -124,9 +124,9 @@ function check_author_file
 	echo " -------- Fichier auteur :"
 	authorFileContent=""
 	if [[ -f "$dirToCheck"/auteur ]]; then
-		authorFileContent=$(cat "$dirToCheck"/auteur)
+		authorFileContent="$(cat "$dirToCheck"/auteur)"
 	elif [[ -f "$dirToCheck"/author ]]; then
-		authorFileContent=$(cat "$dirToCheck"/author)
+		authorFileContent="$(cat "$dirToCheck"/author)"
 	else
 		print_error "ERREUR : fichier non trouve."
 		return
@@ -208,14 +208,14 @@ function advanced_norme_check_forbidendingchars
 		fi
 	done
 	forbidEndingCharsRegex="${forbidEndingCharsRegex}"')$'
-	findError=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
+	findError="$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 $codeFile | grep -nE "$forbidEndingCharsRegex" | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '^[0-9]*:# *include *<')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "Operateur en fin de ligne dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
-		done)
+		done)"
 	if [[ -z "$findError" ]]; then
 		return 0
 	else
@@ -226,14 +226,14 @@ function advanced_norme_check_forbidendingchars
 
 function advanced_norme_check_brackets
 {
-	findError=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
+	findError="$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 $codeFile | grep -nE '({|})' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '({|})$' | grep -vE "'({|})'" | perl -ne '/^(?![0-9]*:[ \t]*}([ \t]*t_[a-zA-Z0-9_]*;|;)$)(.*)$/ && print "$2\n"')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "Accolades sans retour a la ligne dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
-		done)
+		done)"
 	if [[ -z "$findError" ]]; then
 		return 0
 	else
@@ -244,14 +244,14 @@ function advanced_norme_check_brackets
 
 function advanced_norme_check_parenthesis
 {
-	findError=$(find "$dirToCheck" -name "*.h" -print0 |
+	findError="$(find "$dirToCheck" -name "*.h" -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 $codeFile | grep -nE '\(\)' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "Parentheses sans contenu dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
-		done)
+		done)"
 	if [[ -z "$findError" ]]; then
 		return 0
 	else
@@ -262,14 +262,14 @@ function advanced_norme_check_parenthesis
 
 function advanced_norme_check_const_init
 {
-	findError=$(find "$dirToCheck" -name "*.c" -print0 |
+	findError="$(find "$dirToCheck" -name "*.c" -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 $codeFile | grep -nE '=' | grep -vE 'static' | perl -ne '/^([0-9]*:[\t]+[a-zA-Z0-9_ \t*]*const.*)$/ && print "$1\n"')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "Initialisation dans une declaration dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
-		done)
+		done)"
 	if [[ -z "$findError" ]]; then
 		return 0
 	else
@@ -311,9 +311,9 @@ function check_author_of_code
 	IFS=':'
 	read -a listOfAuthors <<< $authors
 	IFS="$OIFS"
-	findError=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
+	findError="$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
-			listOfAuthorsInCodeFileInString=$(head -n 11 "$codeFile" | perl -ne '/(By\:|by) ([^ ]*)/ && print "$2\n"')
+			listOfAuthorsInCodeFileInString="$(head -n 11 "$codeFile" | perl -ne '/(By\:|by) ([^ ]*)/ && print "$2\n"')"
 			IFS='
 '
 			read -a listOfAuthorsInCodeFile <<< $listOfAuthorsInCodeFileInString
@@ -323,7 +323,7 @@ function check_author_of_code
 					print_error "ERREUR : l'auteur du fichier $codeFile ($authorInCodeFile) n'est pas un auteur du projet."
 				fi
 			done
-		done)
+		done)"
 	if [[ -z "$findError" ]]; then
 		print_ok "OK."
 	else
@@ -358,7 +358,7 @@ function show_detail_author_of_code
 		dirToExcludeFromCodeAuthorDetail="libft"
 	fi
 	echo " -------- Detail des auteurs du code :"
-	findResult=$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -not -path "$dirToCheck"/"$dirToExcludeFromCodeAuthorDetail"/* -print0 |
+	findResult="$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -not -path "$dirToCheck"/"$dirToExcludeFromCodeAuthorDetail"/* -print0 |
 		(while IFS= read -r -d $'\0' codeFile; do
 			createdAuthor="$(head -n 11 "$codeFile" | perl -ne '/Created\:[^b]*by ([^ ]*)/ && print "$1"')"
 			updatedAuthor="$(head -n 11 "$codeFile" | perl -ne '/Updated\:[^b]*by ([^ ]*)/ && print "$1"')"
@@ -374,7 +374,7 @@ function show_detail_author_of_code
 		print_info "Fichiers crees :"
 		echo "${createdAuthorList:1}"
 		print_info "Fichiers modifies en dernier :"
-		echo "${updatedAuthorList:1}"))
+		echo "${updatedAuthorList:1}"))"
 	echo "$findResult"
 }
 
@@ -419,7 +419,7 @@ function makefile_check_fclean
 # Arg $1 == checkItIsNotRecompiled
 function makefile_check_make
 {
-	execTimestamp=$(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null)
+	execTimestamp="$(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null)"
 	if [[ "$1" == "true" ]]; then
 		sleep 2 #pour etre certain que le nouvel executable a un nouveau timestamp s'il relink.
 	fi
@@ -442,7 +442,7 @@ function makefile_check_make
 
 function makefile_check_re
 {
-	execTimestamp=$(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null)
+	execTimestamp="$(date -r "$dirToCheck"/"$execToCheck" 2> /dev/null)"
 	sleep 2 #pour etre certain que le nouvel executable a un nouveau timestamp.
 	if ! make $makeReFlags re -C "$dirToCheck" &> /dev/null; then
 		print_error "ERREUR : la regle re n'existe pas ou est invalide."
@@ -635,7 +635,7 @@ function check_forbidden_func
 		print_error "ERREUR : executable non trouve."
 		return
 	fi
-	listOfFunctionInString=$(nm -u "$dirToCheck"/"$execToCheck" | grep "^_" | grep -v "^__" | cut -d_ -f2- | cut -d$ -f1)
+	listOfFunctionInString="$(nm -u "$dirToCheck"/"$execToCheck" | grep "^_" | grep -v "^__" | cut -d_ -f2- | cut -d$ -f1)"
 	read -a listOfFunction <<< $listOfFunctionInString
 	read -a listOfAuthorizedFunction <<< $authorizedFuncs
 	for func in ${listOfFunction[@]}; do
