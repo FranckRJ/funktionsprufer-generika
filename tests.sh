@@ -168,11 +168,12 @@ function check_norme
 {
 	echo " -------- Norme :"
 	if command -v norminette &> /dev/null; then
-		normeResult="$(norminette "$dirToCheck" | grep -v "^Warning: Not a valid file" | grep -v "^Norme: ")"
+		normeResult="$(norminette "$dirToCheck" | grep -v "^Warning: Not a valid file" | grep -B1 -v "^Norme: ")"
 		if [[ -z "$normeResult" ]]; then
 			print_ok "OK."
 		else
-			print_error "ERREUR : "$(echo "$normeResult" | wc -l | tr -d ' ')" erreur(s) de norme."
+			print_error "ERREUR : $(echo "$normeResult" | grep -v "^Norme: " | wc -l | tr -d ' ') erreurs de norme au total dans les fichiers :"
+			echo "$normeResult" | perl -ne '/^Norme: (.*)/ && print "'${INFO_COLOR}'-'${RESET_COLOR}' $1\n"'
 		fi
 	else
 		echo "Norminette non presente."
@@ -212,7 +213,7 @@ function advanced_norme_check_forbidendingchars
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 $codeFile | grep -nE "$forbidEndingCharsRegex" | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '^[0-9]*:# *include *<')"
 			if [[ ! -z "$grepRes" ]]; then
-				print_error "Operateur en fin de ligne dans le fichier ${codeFile} :"
+				print_error "ERREUR : operateur en fin de ligne dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
 		done)"
@@ -230,7 +231,7 @@ function advanced_norme_check_brackets
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 $codeFile | grep -nE '({|})' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '({|})$' | grep -vE "'({|})'" | perl -ne '/^(?![0-9]*:[ \t]*}([ \t]*t_[a-zA-Z0-9_]*;|;)$)(.*)$/ && print "$2\n"')"
 			if [[ ! -z "$grepRes" ]]; then
-				print_error "Accolades sans retour a la ligne dans le fichier ${codeFile} :"
+				print_error "ERREUR : accolades sans retour a la ligne dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
 		done)"
@@ -248,7 +249,7 @@ function advanced_norme_check_parenthesis
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 $codeFile | grep -nE '\(\)' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*')"
 			if [[ ! -z "$grepRes" ]]; then
-				print_error "Parentheses sans contenu dans le fichier ${codeFile} :"
+				print_error "ERREUR : parentheses sans contenu dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
 		done)"
@@ -266,7 +267,7 @@ function advanced_norme_check_const_init
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 $codeFile | grep -nE '=' | grep -vE 'static' | perl -ne '/^([0-9]*:[\t]+[a-zA-Z0-9_ \t*]*const.*)$/ && print "$1\n"')"
 			if [[ ! -z "$grepRes" ]]; then
-				print_error "Initialisation dans une declaration dans le fichier ${codeFile} :"
+				print_error "ERREUR : initialisation dans une declaration dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
 		done)"
