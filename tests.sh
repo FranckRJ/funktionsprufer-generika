@@ -168,7 +168,13 @@ function check_norme
 {
 	echo " -------- Norme :"
 	if command -v norminette &> /dev/null; then
-		normeResult="$(norminette "$dirToCheck" | grep -v "^Warning: Not a valid file" | grep -B1 -v "^Norme: ")"
+		normeResult="$(norminette "$dirToCheck")"$'\n'"$(find "$dirToCheck" \( \( -name ".*.c" -o -name ".*.h" \) -o \( -type d -name ".*" \) \) -print0 |
+			while IFS= read -r -d $'\0' codeFile; do
+				if [[ "$codeFile" != "." ]] && [[ "$codeFile" != ".." ]]; then
+					norminette "$codeFile"
+				fi
+			done)"
+		normeResult="$(echo "$normeResult" | grep -v "^Warning: Not a valid file" | grep -B1 -v "^Norme: " | grep -v "^--$" | grep -v "^$")"
 		if [[ -z "$normeResult" ]]; then
 			print_ok "OK."
 		else
