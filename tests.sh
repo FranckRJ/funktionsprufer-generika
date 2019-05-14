@@ -217,7 +217,7 @@ function advanced_norme_check_forbidendingchars
 	forbidEndingCharsRegex="${forbidEndingCharsRegex}"')$'
 	findError="$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
-			grepRes="$(tail -n +12 $codeFile | grep -nE "$forbidEndingCharsRegex" | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '^[0-9]*:# *include *<')"
+			grepRes="$(tail -n +12 "$codeFile" | grep -nE "$forbidEndingCharsRegex" | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '^[0-9]*:# *include *<')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "ERREUR : operateur en fin de ligne dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
@@ -235,7 +235,7 @@ function advanced_norme_check_brackets
 {
 	findError="$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
-			grepRes="$(tail -n +12 $codeFile | grep -nE '({|})' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '({|})$' | grep -vE "'({|})'" | perl -ne '/^(?![0-9]*:[ \t]*}([ \t]*t_[a-zA-Z0-9_]*;|;)$)(.*)$/ && print "$2\n"')"
+			grepRes="$(tail -n +12 "$codeFile" | grep -nE '({|})' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*' | grep -vE '({|})$' | grep -vE "'({|})'" | perl -ne '/^(?![0-9]*:[ \t]*}([ \t]*t_[a-zA-Z0-9_]*;|;)$)(.*)$/ && print "$2\n"')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "ERREUR : accolades sans retour a la ligne dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
@@ -253,7 +253,7 @@ function advanced_norme_check_parenthesis
 {
 	findError="$(find "$dirToCheck" -name "*.h" -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
-			grepRes="$(tail -n +12 $codeFile | grep -nE '\(\)' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*')"
+			grepRes="$(tail -n +12 "$codeFile" | grep -nE '\(\)' | grep -vE '^[0-9]*:(\/\*|\*\/)$' | grep -vE '^[0-9]*:\*\*')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "ERREUR : parentheses sans contenu dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
@@ -271,10 +271,32 @@ function advanced_norme_check_const_init
 {
 	findError="$(find "$dirToCheck" -name "*.c" -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
-			grepRes="$(tail -n +12 $codeFile | grep -nE '=' | grep -vE 'static' | perl -ne '/^([0-9]*:[\t]+[a-zA-Z0-9_ \t*]*const.*)$/ && print "$1\n"')"
+			grepRes="$(tail -n +12 "$codeFile" | grep -nE '=' | grep -vE 'static' | perl -ne '/^([0-9]*:[\t]+[a-zA-Z0-9_ \t*]*const.*)$/ && print "$1\n"')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_error "ERREUR : initialisation dans une declaration dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
+			fi
+		done)"
+	if [[ -z "$findError" ]]; then
+		return 0
+	else
+		echo "$findError"
+		return 1
+	fi
+}
+
+function advanced_norme_check_define_before_include
+{
+	findError="$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
+		while IFS= read -r -d $'\0' codeFile; do
+			grepRes="$(tail -n +12 "$codeFile" | grep -nE -B 999 '#[ ]*include' | grep -E '#[ ]*define')"
+			grepResLineCount="0"
+			if [[ ! -z "$grepRes" ]]; then
+				grepResLineCount="$(echo "$grepRes" | wc -l)"
+			fi
+			if [[ "$grepResLineCount" -gt "1" ]] || [[ "$codeFile" =~ c$ && "$grepResLineCount" -ne "0" ]]; then
+				print_error "ERREUR : define avant une include dans le fichier ${codeFile} :"
+				echo "$grepRes" | perl -ne "/^([0-9]*)[:-][ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
 		done)"
 	if [[ -z "$findError" ]]; then
@@ -300,6 +322,9 @@ function check_advanced_norme
 		errorFound="true"
 	fi
 	if ! advanced_norme_check_const_init; then
+		errorFound="true"
+	fi
+	if ! advanced_norme_check_define_before_include; then
 		errorFound="true"
 	fi
 	if [[ "$errorFound" == "false" ]]; then
