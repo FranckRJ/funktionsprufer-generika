@@ -307,6 +307,28 @@ function advanced_norme_check_define_before_include
 	fi
 }
 
+function advanced_norme_check_files_name
+{
+	findError="$(find "$dirToCheck" -type d -path '*/.*' -prune -o \( -type d -o -name '*.[ch]' \) -print0 |
+		while IFS= read -r -d $'\0' codeFile; do
+			if [[ "$codeFile" != "$dirToCheck" ]]; then
+				codeFileName="$(basename "$codeFile")"
+				if [[ ! -d "$codeFile" ]] && [[ "$codeFileName" =~ \.[ch]$ ]]; then
+					codeFileName="${codeFileName:0:${#codeFileName}-2}"
+				fi
+				if [[ ! "$codeFileName" =~ ^[a-z0-9_]*$ ]]; then
+					print_error "ERREUR : le nom du fichier \"${codeFile}\" est invalide."
+				fi
+			fi
+		done)"
+	if [[ -z "$findError" ]]; then
+		return 0
+	else
+		echo "$findError"
+		return 1
+	fi
+}
+
 function check_advanced_norme
 {
 	errorFound="false"
@@ -325,6 +347,9 @@ function check_advanced_norme
 		errorFound="true"
 	fi
 	if ! advanced_norme_check_define_before_include; then
+		errorFound="true"
+	fi
+	if ! advanced_norme_check_files_name; then
 		errorFound="true"
 	fi
 	if [[ "$errorFound" == "false" ]]; then
