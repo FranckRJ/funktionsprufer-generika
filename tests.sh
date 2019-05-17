@@ -36,8 +36,8 @@ read -r -d '' HELP_TEXT << EOM
 DESCRIPTION :
 Fait divers tests generiques sur un projet.
 
-Les verifications de norme avancee et des auteurs du code depend de la norme, si la verification
-de la norme echoue ces tests ont un compertement indetermine.
+Les verifications de norme avancee, des avertissements sur le code et des auteurs du code dependent
+de la norme, si la verification de la norme echoue ces tests ont un comportement indetermine.
 
 La norme avancee peut contenir des faux positifs, son resultat doit etre verifie manuellement.
 La liste par defaut des operateurs interdits en fin de ligne est "&& ||".
@@ -366,9 +366,9 @@ function check_advanced_norme
 
 function code_warning_check_globals
 {
-	findWarning="$(find "$dirToCheck" -name "*.c" -print0 |
+	findWarning="$(find "$dirToCheck" \( -name "*.c" -o -name "*.h" \) -print0 |
 		while IFS= read -r -d $'\0' codeFile; do
-			grepRes="$(tail -n +12 "$codeFile" | perl -ne '/(^[^ \t#].*[A-Za-z_].*[=;].*$)/ && print "$.:$1\n"')"
+			grepRes="$(tail -n +12 "$codeFile" | perl -ne '/(^[^ \t#].*[^A-Za-z0-9_]g_.*$)/ && print "$.:$1\n"')"
 			if [[ ! -z "$grepRes" ]]; then
 				print_info "AVERTISSEMENT : globales dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
