@@ -378,7 +378,7 @@ function code_warning_check_globals
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 "$codeFile" | perl -ne '/(^[^ \t#].*[^A-Za-z0-9_]g_.*$)/ && print "$.:$1\n"')"
 			if [[ ! -z "$grepRes" ]]; then
-				print_warning "AVERTISSEMENT : globales dans le fichier ${codeFile} :"
+				print_warning "AVERTISSEMENT : variable globale dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
 		done)"
@@ -396,7 +396,7 @@ function code_warning_check_statics
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 "$codeFile" | perl -ne '/(^(?=[ \t]).*[ \t]static[ \t].*$)/ && print "$.:$1\n"')"
 			if [[ ! -z "$grepRes" ]]; then
-				print_warning "AVERTISSEMENT : statique dans une fonction ${codeFile} :"
+				print_warning "AVERTISSEMENT : variable statique dans le fichier ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
 		done)"
