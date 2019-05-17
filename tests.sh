@@ -9,6 +9,7 @@ set -f
 
 OK_COLOR="\033[1;32m"
 ERROR_COLOR="\033[1;31m"
+WARNING_COLOR="\033[1;35m"
 INFO_COLOR="\033[1;33m"
 RESET_COLOR="\033[0m"
 
@@ -93,6 +94,13 @@ echo "$HELP_TEXT"
 function print_error
 {
 	echo -e -n "$ERROR_COLOR"
+	echo -n "$1"
+	echo -e "$RESET_COLOR"
+}
+
+function print_warning
+{
+	echo -e -n "$WARNING_COLOR"
 	echo -n "$1"
 	echo -e "$RESET_COLOR"
 }
@@ -370,7 +378,25 @@ function code_warning_check_globals
 		while IFS= read -r -d $'\0' codeFile; do
 			grepRes="$(tail -n +12 "$codeFile" | perl -ne '/(^[^ \t#].*[^A-Za-z0-9_]g_.*$)/ && print "$.:$1\n"')"
 			if [[ ! -z "$grepRes" ]]; then
-				print_info "AVERTISSEMENT : globales dans le fichier ${codeFile} :"
+				print_warning "AVERTISSEMENT : globales dans le fichier ${codeFile} :"
+				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
+			fi
+		done)"
+	if [[ -z "$findWarning" ]]; then
+		return 0
+	else
+		echo "$findWarning"
+		return 1
+	fi
+}
+
+function code_warning_check_statics
+{
+	findWarning="$(find "$dirToCheck" -name "*.c" -print0 |
+		while IFS= read -r -d $'\0' codeFile; do
+			grepRes="$(tail -n +12 "$codeFile" | perl -ne '/(^(?=[ \t]).*[ \t]static[ \t].*$)/ && print "$.:$1\n"')"
+			if [[ ! -z "$grepRes" ]]; then
+				print_warning "AVERTISSEMENT : statique dans une fonction ${codeFile} :"
 				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
 			fi
 		done)"
@@ -387,6 +413,9 @@ function check_code_warnings
 	warningFound="false"
 	echo " -------- Avertissements sur le code :"
 	if ! code_warning_check_globals; then
+		warningFound="true"
+	fi
+	if ! code_warning_check_statics; then
 		warningFound="true"
 	fi
 	if [[ "$warningFound" == "false" ]]; then
