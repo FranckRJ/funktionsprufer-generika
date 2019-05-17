@@ -20,6 +20,7 @@ forbidEndingChars="@&&@||"
 checkAuthorFile="true"
 checkNorme="true"
 checkAdvancedNorme="true"
+checkCodeWarnings="false"
 checkCodeAuthors="true"
 showCodeAuthorsDetail="true"
 checkMakefile="true"
@@ -41,6 +42,9 @@ de la norme echoue ces tests ont un compertement indetermine.
 La norme avancee peut contenir des faux positifs, son resultat doit etre verifie manuellement.
 La liste par defaut des operateurs interdits en fin de ligne est "&& ||".
 
+Par defaut les avertissements sur le code sont desactives (globales, etc). Pour les activer utilisez
+la commande --enablecodewarning (ou -ecw).
+
 LISTE DES COMMANDES :
 <chemin_vers_projet>                  Specifie le chemin vers le projet a tester.
 
@@ -57,6 +61,8 @@ LISTE DES COMMANDES :
                                       parametre pour le detail des auteurs du code. Si laisse vide
                                       vaut "libft".
 
+--enablecodewarnings / -ecw           Active les avertissements sur le code.
+
 --noauthorfile / -naf                 Desactive la verification du fichier auteur.
 --nonorme / -nn                       Desactive la verification de la norme.
 --noadvancednorme / -nan              Desactive la verification de la norme avancee.
@@ -68,6 +74,7 @@ LISTE DES COMMANDES :
 --onlyauthorfile / -oaf               Active uniquement la verification du fichier auteur.
 --onlynorme / -on                     Active uniquement la verification de la norme.
 --onlyadvancednorme / -oan            Active uniquement la verification de la norme avancee.
+--onlycodewarnings / -ocw             Active uniquement les avertissements sur le code.
 --onlycodeauthors / -oca              Active uniquement la verification des auteurs du code.
 --onlycodeauthorsdetail / -ocad       Active uniquement l'affichage du detail des auteurs du code.
 --onlymakefile / -omf                 Active uniquement la verification du Makefile.
@@ -354,6 +361,36 @@ function check_advanced_norme
 	fi
 	if [[ "$errorFound" == "false" ]]; then
 		print_ok "OK."
+	fi
+}
+
+function code_warning_check_globals
+{
+	findWarning="$(find "$dirToCheck" -name "*.c" -print0 |
+		while IFS= read -r -d $'\0' codeFile; do
+			grepRes="$(tail -n +12 "$codeFile" | perl -ne '/(^[^ \t#].*[A-Za-z_].*[=;].*$)/ && print "$.:$1\n"')"
+			if [[ ! -z "$grepRes" ]]; then
+				print_info "AVERTISSEMENT : globales dans le fichier ${codeFile} :"
+				echo "$grepRes" | perl -ne "/^([0-9]*):[ \t]*(.*)/ && print \"${INFO_COLOR}\",\$1 + 11,\"${RESET_COLOR}: \$2\n\""
+			fi
+		done)"
+	if [[ -z "$findWarning" ]]; then
+		return 0
+	else
+		echo "$findWarning"
+		return 1
+	fi
+}
+
+function check_code_warnings
+{
+	warningFound="false"
+	echo " -------- Avertissements sur le code :"
+	if ! code_warning_check_globals; then
+		warningFound="true"
+	fi
+	if [[ "$warningFound" == "false" ]]; then
+		print_ok "Pas d'avertissements."
 	fi
 }
 
@@ -770,6 +807,8 @@ while [[ "$idx" != "$argc" ]]; do
 			else
 				dirToExcludeFromCodeAuthorDetail="$param"
 			fi
+		elif [[ "$param" == "--enablecodewarnings" ]] || [[ "$param" == "-ecw" ]]; then
+			checkCodeWarnings="true"
 		elif [[ "$param" == "--noauthorfile" ]] || [[ "$param" == "-naf" ]]; then
 			checkAuthorFile="false"
 		elif [[ "$param" == "--nonorme" ]] || [[ "$param" == "-nn" ]]; then
@@ -793,6 +832,9 @@ while [[ "$idx" != "$argc" ]]; do
 		elif [[ "$param" == "--onlyadvancednorme" ]] || [[ "$param" == "-oan" ]]; then
 			disable_default_check
 			checkAdvancedNorme="true"
+		elif [[ "$param" == "--onlycodewarnings" ]] || [[ "$param" == "-ocw" ]]; then
+			disable_default_check
+			checkCodeWarnings="true"
 		elif [[ "$param" == "--onlycodeauthors" ]] || [[ "$param" == "-oca" ]]; then
 			disable_default_check
 			checkCodeAuthors="true"
@@ -840,6 +882,9 @@ if [[ "$checkNorme" == "true" ]]; then
 fi
 if [[ "$checkAdvancedNorme" == "true" ]]; then
 	check_advanced_norme
+fi
+if [[ "$checkCodeWarnings" == "true" ]]; then
+	check_code_warnings
 fi
 if [[ "$checkCodeAuthors" == "true" ]]; then
 	check_author_of_code
