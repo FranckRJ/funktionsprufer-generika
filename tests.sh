@@ -33,7 +33,7 @@ dirToExcludeFromCodeAuthorDetail=""
 
 function print_help
 {
-read -r -d '' HELP_TEXT << EOM
+read -r -d '' HELP_TEXT << "EOM"
 DESCRIPTION :
 Fait divers tests generiques sur un projet.
 
@@ -86,6 +86,18 @@ LISTE DES COMMANDES :
 --makeallj                            Active l'option -j pour les make re et normaux.
 
 --help / -h                           Affiche cette page d'aide.
+
+EXEMPLES :
+./tests.sh -a 'auteur1:auteur2' -e nom_exec -f "fonc1 fonc2" ../chemin/vers/projet
+./tests.sh -a 'auteur1' -e nom_exec -f "$(cat projet_foncs)" ../chemin/vers/projet
+
+auteurX                    Le login des auteurs, s'il y en a plusieurs, separe par un ':'.
+nom_exec                   Le nom de l'executable a tester.
+foncX / projet_foncs       La liste des fonctions autorisees dans un seul parametre, separe par des
+                           espaces. Pour plus de facilite la liste peut etre recuperee depuis un
+                           fichier via "$(cat projet_foncs)" avec "projet_foncs" un fichier
+                           contenant les fonctions autorisees du projet (ex: 21sh_funcs).
+../chemin/vers/projet      Le chemin vers le dossier contenant les fichiers du projet.
 EOM
 
 echo "$HELP_TEXT"
