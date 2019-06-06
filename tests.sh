@@ -149,15 +149,16 @@ function check_author_file
 {
 	errorOccurred="false"
 	echo " -------- Fichier auteur :"
-	authorFileContent=""
+	authorFilePath=""
 	if [[ -f "$dirToCheck"/auteur ]]; then
-		authorFileContent="$(cat "$dirToCheck"/auteur)"
+		authorFilePath="${dirToCheck}/auteur"
 	elif [[ -f "$dirToCheck"/author ]]; then
-		authorFileContent="$(cat "$dirToCheck"/author)"
+		authorFilePath="${dirToCheck}/author"
 	else
 		print_error "ERREUR : fichier non trouve."
 		return
 	fi
+	authorFileContent="$(cat "$authorFilePath")"
 	if [[ -z "$authors" ]]; then
 		echo "Auteurs non initialises."
 		return
@@ -187,7 +188,11 @@ function check_author_file
 	if [[ "${#listOfAuthors[@]}" -gt 0 ]]; then
 		print_error "ERREUR : tous les auteurs du projet ne sont pas presents dans le fichier auteur."
 	elif [[ "$errorOccurred" == "false" ]]; then
-		print_ok "OK."
+		if [[ ! -z "$(tail -c 1 "$authorFilePath")" ]]; then
+			print_error "ERREUR : le fichier auteur ne se termine pas par un \\n."
+		else
+			print_ok "OK."
+		fi
 	fi
 }
 
