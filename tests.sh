@@ -206,7 +206,7 @@ function check_norme
 					norminette "$codeFile"
 				fi
 			done)"
-		normeResult="$(echo "$normeResult" | grep -v "^Warning: Not a valid file" | grep -B1 -v "^Norme: " | grep -v "^--$" | grep -v "^$")"
+		normeResult="$(echo "$normeResult" | grep -v "^Warning: Not a valid file" | grep -v "^$" | grep -B1 -v "^Norme: " | grep -v "^--$" | grep -v "^$")"
 		if [[ -z "$normeResult" ]]; then
 			print_ok "OK."
 		else
