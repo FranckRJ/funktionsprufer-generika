@@ -20,7 +20,7 @@ authorizedFuncs=""
 forbidEndingChars="@&&@||"
 checkAuthorFile="true"
 checkNorme="true"
-checkAdvancedNorme="true"
+checkAdvancedNorme="false"
 checkCodeWarnings="false"
 checkCodeAuthors="true"
 showCodeAuthorsDetail="true"
@@ -62,11 +62,11 @@ LISTE DES COMMANDES :
                                       parametre pour le detail des auteurs du code. Si laisse vide
                                       vaut "libft".
 
+--enableadvancednorme / -ean          Active la verification de la norme avancee.
 --enablecodewarnings / -ecw           Active les avertissements sur le code.
 
 --noauthorfile / -naf                 Desactive la verification du fichier auteur.
 --nonorme / -nn                       Desactive la verification de la norme.
---noadvancednorme / -nan              Desactive la verification de la norme avancee.
 --nocodeauthors / -nca                Desactive la verification des auteurs du code.
 --nocodeauthorsdetail / -ncad         Desactive l'affichage du detail des auteurs du code.
 --nomakefile / -nmf                   Desactive la verification du Makefile.
@@ -74,7 +74,6 @@ LISTE DES COMMANDES :
 
 --onlyauthorfile / -oaf               Active uniquement la verification du fichier auteur.
 --onlynorme / -on                     Active uniquement la verification de la norme.
---onlyadvancednorme / -oan            Active uniquement la verification de la norme avancee.
 --onlycodewarnings / -ocw             Active uniquement les avertissements sur le code.
 --onlycodeauthors / -oca              Active uniquement la verification des auteurs du code.
 --onlycodeauthorsdetail / -ocad       Active uniquement l'affichage du detail des auteurs du code.
@@ -853,14 +852,14 @@ while [[ "$idx" != "$argc" ]]; do
 			else
 				dirToExcludeFromCodeAuthorDetail="$param"
 			fi
+		elif [[ "$param" == "--enableadvancednorme" ]] || [[ "$param" == "-ean" ]]; then
+			checkAdvancedNorme="true"
 		elif [[ "$param" == "--enablecodewarnings" ]] || [[ "$param" == "-ecw" ]]; then
 			checkCodeWarnings="true"
 		elif [[ "$param" == "--noauthorfile" ]] || [[ "$param" == "-naf" ]]; then
 			checkAuthorFile="false"
 		elif [[ "$param" == "--nonorme" ]] || [[ "$param" == "-nn" ]]; then
 			checkNorme="false"
-		elif [[ "$param" == "--noadvancednorme" ]] || [[ "$param" == "-nan" ]]; then
-			checkAdvancedNorme="false"
 		elif [[ "$param" == "--nocodeauthors" ]] || [[ "$param" == "-nca" ]]; then
 			checkCodeAuthors="false"
 		elif [[ "$param" == "--nocodeauthorsdetail" ]] || [[ "$param" == "-ncad" ]]; then
@@ -875,9 +874,6 @@ while [[ "$idx" != "$argc" ]]; do
 		elif [[ "$param" == "--onlynorme" ]] || [[ "$param" == "-on" ]]; then
 			disable_default_check
 			checkNorme="true"
-		elif [[ "$param" == "--onlyadvancednorme" ]] || [[ "$param" == "-oan" ]]; then
-			disable_default_check
-			checkAdvancedNorme="true"
 		elif [[ "$param" == "--onlycodewarnings" ]] || [[ "$param" == "-ocw" ]]; then
 			disable_default_check
 			checkCodeWarnings="true"
